@@ -4,11 +4,15 @@
   "description": "",
   "main": "index.js",
 	"manufacturer": "Panasonic",
-	"product": "Generic Projector",
+	"product": [
+		"DW750",
+		"DZ780",
+		"DX820"
+	],
 	"keywords": [
 		"Projector"
 	],
-	"shortname": "Generic Projector",
+	"shortname": "Panasonic Projector",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
