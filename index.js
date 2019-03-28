@@ -29,6 +29,16 @@ class instance extends instance_skel {
 		this.data = [];
 		this.data['lastCommand'] = "authentication";
 
+		this.inputs = [
+			{ id: 'RG1', label: 'RGB1' },
+			{ id: 'RG2', label: 'RGB2' },
+			{ id: 'VID', label: 'Video' },
+			{ id: 'HD1', label: 'HDMI' },
+			{ id: 'DVI', label: 'DVI' },
+			{ id: 'SD1', label: 'SDI' },
+			{ id: 'DL1', label: 'Digital Link' },
+		];
+
 		this.actions(); // export actions
 	}
 
@@ -41,8 +51,6 @@ class instance extends instance_skel {
 	 */
 	actions(system) {
 		var actions = {};
-
-		this.setupChoices();
 
 		actions['projector_on'] = {
 			label: 'Turn On Projector'
@@ -66,42 +74,14 @@ class instance extends instance_skel {
 				{
 					type: 'dropdown',
 					label: 'Input Source',
-					id: 'serial',
+					id: 'source',
 					default: '0',
-					choices: this.CHOICES_SERIALS
+					choices: this.inputs
 				}
 			]
 		};
 
 		this.setActions(actions);
-	}
-
-	/**
-	 * Executes the provided action.
-	 *
-	 * @param {Object} action - the action to be executed
-	 * @access public
-	 * @since 1.0.0
-	 */
-	action(action) {
-		var cmd;
-		var opt = action.options;
-
-		switch (action.action) {
-			case 'route':
-
-			break;
-		}
-
-		if (cmd !== undefined) {
-
-			if (this.socket !== undefined && this.socket.connected) {
-				this.socket.send(cmd);
-			}
-			else {
-				debug('Socket not connected :(');
-			}
-		}
 	}
 
 	/**
@@ -264,7 +244,7 @@ class instance extends instance_skel {
 
 			if (this.socket !== undefined && this.socket.connected) {
 
-				self.data['token'] = getToken(line.substring(13, 21));
+				this.data['token'] = getToken(line.substring(13, 21));
 
 			}
 
@@ -272,22 +252,69 @@ class instance extends instance_skel {
 
 			if (this.socket !== undefined && this.socket.connected) {
 
-				self.data['token'] = "";
+				this.data['token'] = "";
 
 			}
 
 		} else if(line == "\x30\x30ERRA\x0d"){
 			
 		} else {
-			self.data[self.data['lastCommand']] = line.substring(3, -1);
-			self.data[self.data['lastCommandCB']](self.data[self.data['lastCommand']]);
+			this.data[this.data['lastCommand']] = line.substring(3, -1);
+			this.data[this.data['lastCommandCB']](this.data[this.data['lastCommand']]);
 		}
 	}
 
-	sendCommand(cmd, cb) {. //TODO: maybe add a command queue? so that we make sure that all commands have to be matched 1:1 with their response?
-		self.data['lastCommand'] = cmd;
-		self.data['lastCommandCB'] = cb;
-		this.socket.send(self.data['token']+"\x30\x30"+cmd+"\x0d");
+	sendCommand(cmd, cb) { //TODO: maybe add a command queue? so that we make sure that all commands have to be matched 1:1 with their response?
+		this.data['lastCommand'] = cmd;
+		this.data['lastCommandCB'] = cb;
+		if (this.socket !== undefined && this.socket.connected) {
+			if(this.data['token'] === undefined){
+				this.socket.send("\x30\x30" + cmd + "\x0d");
+			}else{
+				this.socket.send(this.data['token'] + "\x30\x30" + cmd + "\x0d");
+			}
+		}
+	}
+
+
+	/**
+	 * Executes the provided action.
+	 *
+	 * @param {Object} action - the action to be executed
+	 * @access public
+	 * @since 1.0.0
+	 */
+	action(action) {
+		var cmd;
+		var opt = action.options;
+
+		switch (action.action) {
+			case 'projector_on':
+				this.sendCommand("PON",function(resp){});
+				break;
+			case 'projector_off':
+				this.sendCommand("POW",function(resp){});
+				break;
+			case 'shutter_on':
+				this.sendCommand("OSH:1",function(resp){});
+				break;
+			case 'shutter_off':
+				this.sendCommand("OSH:0",function(resp){});
+				break;
+			case 'input_source':
+				this.sendCommand("IIS:"+opt.source,function(resp){});
+				break;
+		}
+
+		if (cmd !== undefined) {
+
+			if (this.socket !== undefined && this.socket.connected) {
+				this.socket.send(cmd);
+			}
+			else {
+				debug('Socket not connected :(');
+			}
+		}
 	}
 
 	/**
@@ -441,63 +468,6 @@ class instance extends instance_skel {
 	}
 
 	/**
-	 * INTERNAL: Routes incoming data to the appropriate function for processing.
-	 *
-	 * @param {string} key - the command/data type being passed
-	 * @param {Object} data - the collected data
-	 * @access protected
-	 * @since 1.0.0
-	 */
-	processVideohubInformation(key,data) {
-
-		if (key.match(/(INPUT|OUTPUT|MONITORING OUTPUT|SERIAL PORT) LABELS/)) {
-			this.updateLabels(key,data);
-			this.actions();
-			this.initFeedbacks();
-		}
-		else if (key.match(/(VIDEO OUTPUT|VIDEO MONITORING OUTPUT|SERIAL PORT) ROUTING/)) {
-			this.updateRouting(key,data);
-
-			this.checkFeedbacks('input_bg');
-			this.checkFeedbacks('selected_source');
-		}
-		else if (key.match(/(VIDEO OUTPUT|VIDEO MONITORING OUTPUT|SERIAL PORT) LOCKS/)) {
-			this.updateLocks(key,data);
-		}
-		else if (key.match(/(VIDEO INPUT|VIDEO OUTPUT|SERIAL PORT) STATUS/)) {
-			this.updateStatus(key,data);
-			this.actions();
-			this.initFeedbacks();
-		}
-		else if (key == 'SERIAL PORT DIRECTIONS') {
-			this.updateSerialDirections(key,data);
-		}
-		else if (key == 'VIDEOHUB DEVICE') {
-			this.updateDevice(key,data);
-			this.actions();
-			this.initVariables();
-			this.initFeedbacks();
-		}
-		else {
-			// TODO: find out more about the video hub from stuff that comes in here
-		}
-	}
-
-	/**
-	 * INTERNAL: use model data to define the choices for the dropdowns.
-	 *
-	 * @access protected
-	 * @since 1.1.0
-	 */
-	setupChoices() {
-
-		this.CHOICES_INPUTS  = [];
-		this.CHOICES_OUTPUTS = [];
-		this.CHOICES_SERIALS = [];
-		this.CHOICES_INPUTS.push( { id: "key", label: "Label" } );
-	}
-
-	/**
 	 * Process an updated configuration array.
 	 *
 	 * @param {Object} config - the new configuration
@@ -517,45 +487,6 @@ class instance extends instance_skel {
 		if (resetConnection === true || this.socket === undefined) {
 			this.init_tcp();
 		}
-	}
-
-	/**
-	 * INTERNAL: Updates device data from the Videohub
-	 *
-	 * @param {string} labeltype - the command/data type being passed
-	 * @param {Object} object - the collected data
-	 * @access protected
-	 * @since 1.1.0
-	 */
-	updateDevice(labeltype, object) {
-
-		for (var key in object) {
-			var parsethis = object[key];
-			var a = parsethis.split(/: /);
-			var attribute = a.shift();
-			var value = a.join(" ");
-
-			switch (attribute) {
-				case 'Model name':
-					this.deviceName = value;
-					this.log('info', 'Connected to a ' + this.deviceName);
-					break;
-				case 'Video inputs':
-					this.config.inputCount = value;
-					break;
-				case 'Video outputs':
-					this.config.outputCount = value;
-					break;
-				case 'Video monitoring outputs':
-					this.config.monitoringCount = value;
-					break;
-				case 'Serial ports':
-					this.config.serialCount = value;
-					break;
-			}
-		}
-
-		this.saveConfig();
 	}
 }
 exports = module.exports = instance;
