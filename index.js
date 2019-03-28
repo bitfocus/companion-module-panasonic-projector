@@ -26,6 +26,9 @@ class instance extends instance_skel {
 	constructor(system, id, config) {
 		super(system, id, config);
 
+		this.data = [];
+		this.data['lastCommand'] = "authentication";
+
 		this.actions(); // export actions
 	}
 
@@ -170,6 +173,7 @@ class instance extends instance_skel {
 	 * @since 1.1.0
 	 */
 	getToken(salt) {
+		self.data['salt'] = salt;
 		return crypto.createHash('md5').update(this.config.user+":"+this.config.pass+":"+salt).digest("hex");
 	}
 
@@ -255,22 +259,35 @@ class instance extends instance_skel {
 	 * @access protected
 	 * @since 1.0.0
 	 */
-	processProjectorCommand(line){
+	processProjectorCommand(line) {
 		if (line.substring(0, 12) == "NTCONTROL\x20\x31\x20") { //Preamble indicating the device is in protect
 
 			if (this.socket !== undefined && this.socket.connected) {
 
-				this.socket.send(getToken(line.substring(13, 21)));
+				self.data['token'] = getToken(line.substring(13, 21));
 
 			}
 
-		} else if(line.substring(0, 12) == "NTCONTROL\x20\x30\x20") { //Preamble indicating the device is not in protect, lucky us
+		} else if(line.substring(0, 12) == "NTCONTROL\x20\x30\x0d") { //Preamble indicating the device is not in protect, lucky us
 
+			if (this.socket !== undefined && this.socket.connected) {
 
+				self.data['token'] = "";
+
+			}
 
 		} else if(line == "\x30\x30ERRA\x0d"){
-			this.status
+			
+		} else {
+			self.data[self.data['lastCommand']] = line.substring(3, -1);
+			self.data[self.data['lastCommandCB']](self.data[self.data['lastCommand']]);
 		}
+	}
+
+	sendCommand(cmd, cb) {. //TODO: maybe add a command queue? so that we make sure that all commands have to be matched 1:1 with their response?
+		self.data['lastCommand'] = cmd;
+		self.data['lastCommandCB'] = cb;
+		this.socket.send(self.data['token']+"\x30\x30"+cmd+"\x0d");
 	}
 
 	/**
