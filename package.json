@@ -1,0 +1,17 @@
+{
+  "name": "panasonic-dw750",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+	"manufacturer": "Panasonic",
+	"product": "DW750",
+	"keywords": [
+		"Projector"
+	],
+	"shortname": "Panasonic-DW750",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Matt Foulks <mfoulks1@gmail.com>",
+  "license": "ISC"
+}
