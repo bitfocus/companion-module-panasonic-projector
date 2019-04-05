@@ -113,19 +113,22 @@ class instance extends instance_skel {
 				id: 'port',
 				label: 'Control Port',
 				width: 2,
-				default:"1024"
+				default:"1024",
+				regex: this.REGEX_PORT
 			},
 			{
 				type: 'textinput',
 				id: 'user',
 				width: 6,
-				label: 'Username'
+				label: 'Username',
+				default: 'admin1'
 			},
 			{
 				type: 'textinput',
 				id: 'pass',
 				width: 6,
-				label: 'Password'
+				label: 'Password',
+				default: 'panasonic'
 			}
 		]
 	}
@@ -153,7 +156,6 @@ class instance extends instance_skel {
 	 * @since 1.1.0
 	 */
 	getToken(salt) {
-		self.data['salt'] = salt;
 		return crypto.createHash('md5').update(this.config.user+":"+this.config.pass+":"+salt).digest("hex");
 	}
 
@@ -168,10 +170,8 @@ class instance extends instance_skel {
 		debug = this.debug;
 		log = this.log;
 
-		this.initVariables();
-		this.initFeedbacks();
-
-		this.init_tcp();
+		//this.initVariables();
+		//this.initFeedbacks();
 	}
 
 	/**
@@ -180,7 +180,7 @@ class instance extends instance_skel {
 	 * @access protected
 	 * @since 1.0.0
 	 */
-	init_tcp() {
+	init_tcp(cmd) {
 		var receivebuffer = '';
 
 		if (this.socket !== undefined) {
@@ -195,10 +195,6 @@ class instance extends instance_skel {
 		if (this.config.host) {
 			this.socket = new tcp(this.config.host, this.config.port);
 
-			this.socket.on('status_change', (status, message) => {
-				this.status(status, message);
-			});
-
 			this.socket.on('error', (err) => {
 				debug("Network error", err);
 				this.log('error',"Network error: " + err.message);
@@ -212,67 +208,18 @@ class instance extends instance_skel {
 			this.socket.on('data', (chunk) => {
 				var i = 0, line = '', offset = 0;
 				receivebuffer += chunk;
-
-				while ( (i = receivebuffer.indexOf('\n', offset)) !== -1) {
-					line = receivebuffer.substr(offset, i - offset);
-					offset = i + 1;
-					this.socket.emit('receiveline', line.toString());
-				}
-
-				receivebuffer = receivebuffer.substr(offset);
-			});
-
-			this.socket.on('receiveline', (line) => {
-				if (line.length > 0 ) {
-						this.processProjectorCommand(line);
-				} else {
-					debug("weird response from proj", line, line.length);
+				line = receivebuffer.toString();
+				console.log(receivebuffer.toString());
+				if (line.substring(0, 12) == "NTCONTROL\x20\x31\x20") {
+					console.log("recognized login");
+					console.log(line.substring(12, 20));
+					console.log("sending: "+this.getToken(line.substring(12, 20)) + "\x30\x30" + cmd + "\x0d")
+					this.socket.send(this.getToken(line.substring(12, 20)) + "\x30\x30" + cmd + "\x0d");
+				}else{
+					console.log("recognized no login");
+					this.socket.send("\x30\x30" + cmd + "\x0d");
 				}
 			});
-		}
-	}
-
-	/**
-	 * INTERNAL: parse projector commands.
-	 *
-	 * @param {string} line - the command supplied
-	 * @access protected
-	 * @since 1.0.0
-	 */
-	processProjectorCommand(line) {
-		if (line.substring(0, 12) == "NTCONTROL\x20\x31\x20") { //Preamble indicating the device is in protect
-
-			if (this.socket !== undefined && this.socket.connected) {
-
-				this.data['token'] = getToken(line.substring(13, 21));
-
-			}
-
-		} else if(line.substring(0, 12) == "NTCONTROL\x20\x30\x0d") { //Preamble indicating the device is not in protect, lucky us
-
-			if (this.socket !== undefined && this.socket.connected) {
-
-				this.data['token'] = "";
-
-			}
-
-		} else if(line == "\x30\x30ERRA\x0d"){
-			
-		} else {
-			this.data[this.data['lastCommand']] = line.substring(3, -1);
-			this.data[this.data['lastCommandCB']](this.data[this.data['lastCommand']]);
-		}
-	}
-
-	sendCommand(cmd, cb) { //TODO: maybe add a command queue? so that we make sure that all commands have to be matched 1:1 with their response?
-		this.data['lastCommand'] = cmd;
-		this.data['lastCommandCB'] = cb;
-		if (this.socket !== undefined && this.socket.connected) {
-			if(this.data['token'] === undefined){
-				this.socket.send("\x30\x30" + cmd + "\x0d");
-			}else{
-				this.socket.send(this.data['token'] + "\x30\x30" + cmd + "\x0d");
-			}
 		}
 	}
 
@@ -290,19 +237,19 @@ class instance extends instance_skel {
 
 		switch (action.action) {
 			case 'projector_on':
-				this.sendCommand("PON",function(resp){});
+				this.init_tcp("PON");
 				break;
 			case 'projector_off':
-				this.sendCommand("POW",function(resp){});
+				this.init_tcp("POF");
 				break;
 			case 'shutter_on':
-				this.sendCommand("OSH:1",function(resp){});
+				this.init_tcp("OSH:1");
 				break;
 			case 'shutter_off':
-				this.sendCommand("OSH:0",function(resp){});
+				this.init_tcp("OSH:0");
 				break;
 			case 'input_source':
-				this.sendCommand("IIS:"+opt.source,function(resp){});
+				this.init_tcp("IIS:"+opt.source);
 				break;
 		}
 
@@ -318,11 +265,12 @@ class instance extends instance_skel {
 	}
 
 	/**
-	 * INTERNAL: initialize feedbacks.
+	 * INTERNAL: initialize feedbacks. TODO
 	 *
 	 * @access protected
 	 * @since 1.1.0
 	 */
+	 /*
 	initFeedbacks() {
 		// feedbacks
 		var feedbacks = {};
@@ -437,7 +385,7 @@ class instance extends instance_skel {
 		};
 
 		this.setFeedbackDefinitions(feedbacks);
-	}
+	}*/
 
 	/**
 	 * INTERNAL: initialize variables.
@@ -445,6 +393,7 @@ class instance extends instance_skel {
 	 * @access protected
 	 * @since 1.0.0
 	 */
+	 /*
 	initVariables() {
 		var variables = [];
 
@@ -465,7 +414,7 @@ class instance extends instance_skel {
 		});
 
 		this.setVariableDefinitions(variables);
-	}
+	}*/
 
 	/**
 	 * Process an updated configuration array.
@@ -483,10 +432,6 @@ class instance extends instance_skel {
 		}
 
 		this.config = config;
-
-		if (resetConnection === true || this.socket === undefined) {
-			this.init_tcp();
-		}
 	}
 }
 exports = module.exports = instance;
