@@ -2,8 +2,16 @@ var instance_skel = require('../../instance_skel');
 var ntcontrol = require('ntcontrol-connection');
 var debug;
 
-const NUMBER_0_2048_REGEX_STRING = '(\\d|[1-9]\\d|[1-9]\\d\\d|1\\d\\d\\d|20[0-3]\\d|204[0-8])'
-const RGB_REGEX_STRING = '/^' + NUMBER_0_2048_REGEX_STRING + ',' + NUMBER_0_2048_REGEX_STRING + ',' + NUMBER_0_2048_REGEX_STRING + '$/'
+const NUMBER_0_2048_REGEX_STRING = '(\\d|[1-9]\\d|[1-9]\\d\\d|1\\d\\d\\d|20[0-3]\\d|204[0-8])';
+const RGB_REGEX_STRING = '/^' + NUMBER_0_2048_REGEX_STRING + ',' + NUMBER_0_2048_REGEX_STRING + ',' + NUMBER_0_2048_REGEX_STRING + '$/';
+
+const DEFAULT_COLOR_RED = '2048,0,0';
+const DEFAULT_COLOR_GREEN = '0,2048,0';
+const DEFAULT_COLOR_BLUE = '0,0,2048';
+const DEFAULT_COLOR_CYAN = '0,2048,2048';
+const DEFAULT_COLOR_MAGNETA = '2048,0,2048';
+const DEFAULT_COLOR_YELLOW = '2048,2048,0';
+const DEFAULT_COLOR_WHITE = '2048,2048,2048';
 
 const EMPTY_LAMBDA = () => { /* nop */ }
 
@@ -165,7 +173,7 @@ class instance extends instance_skel {
 					label: 'Red (R,G,B)',
 					id: 'red',
 					tooltip: 'Red',
-					default: '2048,0,0',
+					default: DEFAULT_COLOR_RED,
 					regex: RGB_REGEX_STRING
 				},
 				{
@@ -173,7 +181,7 @@ class instance extends instance_skel {
 					label: 'Green (R,G,B)',
 					id: 'green',
 					tooltip: 'Green',
-					default: '0,2048,0',
+					default: DEFAULT_COLOR_GREEN,
 					regex: RGB_REGEX_STRING
 				},
 				{
@@ -181,7 +189,7 @@ class instance extends instance_skel {
 					label: 'Blue (R,G,B)',
 					id: 'blue',
 					tooltip: 'Blue',
-					default: '0,0,2048',
+					default: DEFAULT_COLOR_BLUE,
 					regex: RGB_REGEX_STRING
 				}
 			]
@@ -195,7 +203,7 @@ class instance extends instance_skel {
 					label: 'Red (R,G,B)',
 					id: 'red',
 					tooltip: 'Red',
-					default: '2048,0,0',
+					default: DEFAULT_COLOR_RED,
 					regex: RGB_REGEX_STRING
 				},
 				{
@@ -203,7 +211,7 @@ class instance extends instance_skel {
 					label: 'Green (R,G,B)',
 					id: 'green',
 					tooltip: 'Green',
-					default: '0,2048,0',
+					default: DEFAULT_COLOR_GREEN,
 					regex: RGB_REGEX_STRING
 				},
 				{
@@ -211,7 +219,7 @@ class instance extends instance_skel {
 					label: 'Blue (R,G,B)',
 					id: 'blue',
 					tooltip: 'Blue',
-					default: '0,0,2048',
+					default: DEFAULT_COLOR_BLUE,
 					regex: RGB_REGEX_STRING
 				},
 				{
@@ -219,7 +227,7 @@ class instance extends instance_skel {
 					label: 'Cyan (R,G,B)',
 					id: 'cyan',
 					tooltip: 'Cyan',
-					default: '0,2048,2048',
+					default: DEFAULT_COLOR_CYAN,
 					regex: RGB_REGEX_STRING
 				},
 				{
@@ -227,7 +235,7 @@ class instance extends instance_skel {
 					label: 'Magenta (R,G,B)',
 					id: 'magenta',
 					tooltip: 'Magenta',
-					default: '2048,0,2048',
+					default: DEFAULT_COLOR_MAGNETA,
 					regex: RGB_REGEX_STRING
 				},
 				{
@@ -235,7 +243,7 @@ class instance extends instance_skel {
 					label: 'Yellow (R,G,B)',
 					id: 'yellow',
 					tooltip: 'Yellow',
-					default: '2048,2048,0',
+					default: DEFAULT_COLOR_YELLOW,
 					regex: RGB_REGEX_STRING
 				},
 				{
@@ -243,7 +251,7 @@ class instance extends instance_skel {
 					label: 'White (R,G,B)',
 					id: 'white',
 					tooltip: 'White',
-					default: '2048,2048,2048',
+					default: DEFAULT_COLOR_WHITE,
 					regex: RGB_REGEX_STRING
 				}
 			]
@@ -398,9 +406,7 @@ class instance extends instance_skel {
 		this.connection = this.createConnection(this.config);
 		this.connection.setAuthentication(this.config.user, this.config.pass);
 
-		this.projector = new ntcontrol.Projector(this.connection, this.log);
-		this.projector.on(ntcontrol.Projector.Events.STATE_CHANGE, this.stateChangeHandler.bind(this));
-		this.projector.addMonitoring(ntcontrol.BrightnessControlCommand);
+		this.projector = this.createProjector(this.connection);
 
 		// start connection
 		this.connection.connect();
@@ -433,8 +439,79 @@ class instance extends instance_skel {
 			case 'BrightnessControl':
 				this.setVariable('brightness', value);
 				break;
+			case 'TestPattern':
+				this.setVariable('test_pattern', ntcontrol.enumValueToLabel(ntcontrol.TestPattern, value));
+				break;
+			case 'ColorMatching':
+				this.setVariable('color_matching', ntcontrol.enumValueToLabel(ntcontrol.ColorMatching, value));
+				this.handleColorMatchingChanged(value);
+				break;
+			default:
+				var matches = /^ColorMatching(\d)Colors(Red|Green|Blue|Cyan|Magenta|Yellow|White)$/.exec(value)
+				if (matches.length === 3) {
+					this.setVariable('color_matching_' + matches[1] + 'c_' + matches[2].toLocaleLowerCase(), value);
+				}
+				break;
 		}
-	} 
+	}
+
+	handleColorMatchingChanged(mode) {
+		switch (mode) {
+			case ntcontrol.ColorMatching['3COLORS']:
+				// 3-color-matching
+				this.projector.addMonitoring(ntcontrol.ColorMatching3ColorsRedCommand);
+				this.projector.addMonitoring(ntcontrol.ColorMatching3ColorsGreenCommand);
+				this.projector.addMonitoring(ntcontrol.ColorMatching3ColorsBlueCommand);
+				
+				// 7-color-matching
+				this.projector.removeMonitoring(ntcontrol.ColorMatching7ColorsRedCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching7ColorsGreenCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching7ColorsBlueCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching7ColorsCyanCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching7ColorsMagentaCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching7ColorsYellowCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching7ColorsWhiteCommand);
+		
+				this.setDefaultValues7Color();
+				break;
+			case ntcontrol.ColorMatching['7COLORS']:
+				// 3-color-matching
+				this.projector.removeMonitoring(ntcontrol.ColorMatching3ColorsRedCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching3ColorsGreenCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching3ColorsBlueCommand);
+				
+				// 7-color-matching
+				this.projector.addMonitoring(ntcontrol.ColorMatching7ColorsRedCommand);
+				this.projector.addMonitoring(ntcontrol.ColorMatching7ColorsGreenCommand);
+				this.projector.addMonitoring(ntcontrol.ColorMatching7ColorsBlueCommand);
+				this.projector.addMonitoring(ntcontrol.ColorMatching7ColorsCyanCommand);
+				this.projector.addMonitoring(ntcontrol.ColorMatching7ColorsMagentaCommand);
+				this.projector.addMonitoring(ntcontrol.ColorMatching7ColorsYellowCommand);
+				this.projector.addMonitoring(ntcontrol.ColorMatching7ColorsWhiteCommand);
+		
+				this.setDefaultValues3Color();
+				break;
+			case ntcontrol.ColorMatching.OFF:
+			default:
+				// 3-color-matching
+				this.projector.removeMonitoring(ntcontrol.ColorMatching3ColorsRedCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching3ColorsGreenCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching3ColorsBlueCommand);
+				
+				// 7-color-matching
+				this.projector.removeMonitoring(ntcontrol.ColorMatching7ColorsRedCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching7ColorsGreenCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching7ColorsBlueCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching7ColorsCyanCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching7ColorsMagentaCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching7ColorsYellowCommand);
+				this.projector.removeMonitoring(ntcontrol.ColorMatching7ColorsWhiteCommand);
+		
+				this.setDefaultValues3Color();
+				this.setDefaultValues7Color();
+				break;
+		}
+	}
 
 	sendValue(cmd, value) {
 		if (this.projector !== undefined) {
@@ -527,6 +604,15 @@ class instance extends instance_skel {
 		return obj
 	}
 
+	createProjector(connection) {
+		const obj = new ntcontrol.Projector(connection, this.log);
+		obj.on(ntcontrol.Projector.Events.STATE_CHANGE, this.stateChangeHandler.bind(this));
+		obj.addMonitoring(ntcontrol.BrightnessControlCommand);
+		obj.addMonitoring(ntcontrol.TestPatternCommand);
+		obj.addMonitoring(ntcontrol.ColorMatchingCommand);
+		return obj
+	}
+
 	/**
 	 * Process an updated configuration array.
 	 *
@@ -554,7 +640,7 @@ class instance extends instance_skel {
 		}
 
 		if (this.projector === undefined) {
-			this.projector = new ntcontrol.Projector(this.connection, this.log);
+			this.projector = this.createProjector(this.connection);
 		}
 
 		if (resetConnection) {
@@ -693,6 +779,22 @@ class instance extends instance_skel {
 		super.setVariable(name, value);
 	}
 
+	setDefaultValues3Color() {
+		this.setVariable('color_matching_3c_red', DEFAULT_COLOR_RED);
+		this.setVariable('color_matching_3c_green', DEFAULT_COLOR_GREEN);
+		this.setVariable('color_matching_3c_blue', DEFAULT_COLOR_BLUE);
+	}
+
+	setDefaultValues7Color() {
+		this.setVariable('color_matching_7c_red', DEFAULT_COLOR_RED);
+		this.setVariable('color_matching_7c_green', DEFAULT_COLOR_GREEN);
+		this.setVariable('color_matching_7c_blue', DEFAULT_COLOR_BLUE);
+		this.setVariable('color_matching_7c_cyan', DEFAULT_COLOR_CYAN);
+		this.setVariable('color_matching_7c_magenta', DEFAULT_COLOR_MAGNETA);
+		this.setVariable('color_matching_7c_yellow', DEFAULT_COLOR_YELLOW);
+		this.setVariable('color_matching_7c_white', DEFAULT_COLOR_WHITE);
+	}
+
 	/**
 	 * INTERNAL: initialize variables.
 	 *
@@ -749,6 +851,71 @@ class instance extends instance_skel {
 			name: 'brightness'
 		});
 		this.setVariable('brightness', 100);
+
+		variables.push({
+			label: 'Test Pattern',
+			name: 'test_pattern'
+		});
+		this.setVariable('test_pattern', ntcontrol.TestPattern.Off);
+
+		variables.push({
+			label: 'Color Matching Mode',
+			name: 'color_matching'
+		});
+		this.setVariable('color_matching', ntcontrol.ColorMatching.Off);
+
+		variables.push({
+			label: 'Color Matching 3-Colors: Red',
+			name: 'color_matching_3c_red'
+		});
+
+		variables.push({
+			label: 'Color Matching 3-Colors: Green',
+			name: 'color_matching_3c_green'
+		});
+
+		variables.push({
+			label: 'Color Matching 3-Colors: Blue',
+			name: 'color_matching_3c_blue'
+		});
+
+		variables.push({
+			label: 'Color Matching 7-Colors: Red',
+			name: 'color_matching_7c_red'
+		});
+
+		variables.push({
+			label: 'Color Matching 7-Colors: Green',
+			name: 'color_matching_7c_green'
+		});
+
+		variables.push({
+			label: 'Color Matching 7-Colors: Blue',
+			name: 'color_matching_7c_blue'
+		});
+
+		variables.push({
+			label: 'Color Matching 7-Colors: Cyan',
+			name: 'color_matching_7c_cyan'
+		});
+
+		variables.push({
+			label: 'Color Matching 7-Colors: Magenta',
+			name: 'color_matching_7c_cyan'
+		});
+
+		variables.push({
+			label: 'Color Matching 7-Colors: Yellow',
+			name: 'color_matching_7c_yellow'
+		});
+
+		variables.push({
+			label: 'Color Matching 7-Colors: White',
+			name: 'color_matching_7c_white'
+		});
+		
+		this.setDefaultValues3Color();
+		this.setDefaultValues7Color();
 
 		this.setVariableDefinitions(variables);
 	}
