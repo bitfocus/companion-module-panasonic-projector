@@ -402,6 +402,12 @@ class instance extends instance_skel {
 		
 		this.initVariables();
 
+		if (this.connection !== undefined) {
+			this.connection.removeAllListeners();
+			this.connection.destroy();
+			delete this.connection
+		}
+
 		this.status(this.STATUS_UNKNOWN, 'Connecting...');
 		this.connection = this.createConnection(this.config);
 		this.connection.setAuthentication(this.config.user, this.config.pass);
@@ -597,7 +603,7 @@ class instance extends instance_skel {
 	}
 
 	createConnection(config) {
-		const obj = new ntcontrol.Client(config.host, config.port, this.log);
+		const obj = new ntcontrol.Client(config.host, config.port);
 		obj.on(ntcontrol.Client.Events.DEBUG, d => this.log('debug', d));
 		obj.on(ntcontrol.Client.Events.CONNECT, () => this.status(this.STATUS_OK, 'Connected'));
 		obj.on(ntcontrol.Client.Events.DISCONNECT, () => this.status(this.STATUS_ERROR, 'Disconnected'));
@@ -628,8 +634,11 @@ class instance extends instance_skel {
 		this.config = config;
 		
 		if (resetConnection) {
-			this.connection.removeAllListeners();
-			this.connection.destroy();
+			if (this.connection !== undefined) {
+				this.connection.removeAllListeners();
+				this.connection.destroy();
+				delete this.connection
+			}
 
 			this.connection = this.createConnection(this.config);
 			updateAuthentication = true;
@@ -643,11 +652,13 @@ class instance extends instance_skel {
 			this.projector = this.createProjector(this.connection);
 		}
 
-		if (resetConnection) {
-			this.projector.updateConnection(this.connection);
-
+		if (resetConnection || updateAuthentication) {
+			// restart connection
 			this.connection.connect();
 		}
+
+		// always update the connetion, to reset internal projector state
+		this.projector.updateConnection(this.connection);
 	}
 
 	/**
