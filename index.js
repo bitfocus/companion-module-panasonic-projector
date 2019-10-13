@@ -307,7 +307,7 @@ class instance extends instance_skel {
 				{
 					type: 'number',
 					label: 'Brightness',
-					id: 'vertical',
+					id: 'value',
 					min: 20,
 					max: 100,
 					default: 100,
@@ -545,13 +545,15 @@ class instance extends instance_skel {
 
 		try {
 			switch (action.action) {
-				case 'projector':
+				case 'power':
 					if (opt.mode == 'on') {
 						this.projector.setPower(true);
 					} else if (opt.mode == 'off') {
 						this.projector.setPower(false);
 					} else if (opt.mode == 'toggle') {
 						this.projector.setPower();
+					} else {
+						this.log('error', 'Invalid value for power command: ' + opt.mode)
 					}
 					break;
 				case 'shutter':
@@ -570,6 +572,17 @@ class instance extends instance_skel {
 					break;
 				case 'shutter_fade_out':
 					this.sendValue(ntcontrol.ShutterFadeOutCommand, opt.value);
+					break;
+				case 'freeze':
+					if (opt.mode == 'on') {
+						this.projector.setFreeze(true);
+					} else if (opt.mode == 'off') {
+						this.projector.setFreeze(false);
+					} else if (opt.mode == 'toggle') {
+						this.projector.setFreeze();
+					} else {
+						this.log('error', 'Invalid value for freeze command: ' + opt.mode)
+					}
 					break;
 				case 'input_source':
 					this.projector.setInput(opt.source);
@@ -595,7 +608,14 @@ class instance extends instance_skel {
 					this.sendValue(ntcontrol.ColorMatching7ColorsWhiteCommand, ntcontrol.DefaultRgbConverter.parse(opt.white));
 					break;
 				case 'grid_display':
-					this.sendValue(ntcontrol.GridSettingsCommand, { verticalLines: opt.vertical, horizontalLines: opt.horizontal, mode: opt.mode })
+					this.sendValue(ntcontrol.GridSettingsCommand, { verticalLines: opt.vertical, horizontalLines: opt.horizontal, mode: opt.mode });
+					break;
+				case 'brightness':
+					this.sendValue(ntcontrol.BrightnessControlCommand, opt.value);
+					break;
+				default:
+					this.debug('Unhandeled action: ' + action.action)
+					break;
 			}		
 		} catch (e) {
 			this.log('error', e);
