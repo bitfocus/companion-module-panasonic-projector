@@ -13,6 +13,32 @@ const DEFAULT_COLOR_MAGNETA = '2048,0,2048';
 const DEFAULT_COLOR_YELLOW = '2048,2048,0';
 const DEFAULT_COLOR_WHITE = '2048,2048,2048';
 
+const Constants = {
+	Power: 'power',
+	Shutter: 'shutter',
+	ShutterFadeIn: 'shutter_fade_in',
+	ShutterFadeOut: 'shutter_fade_out',
+	Freeze: 'freeze',
+	InputSource: 'input',
+	ColorMatchingMode: 'color_matching',
+	ColorMatching3Color: 'color_matching_3c',
+	ColorMatching7Color: 'color_matching_7c',
+	TestPattern: 'test_pattern',
+	GridDisplay: 'grid_display',
+	Brightness: 'brightness',
+	LampStatus: 'lamp_state',
+	On: 'on',
+	Off: 'off',
+	Toggle: 'toggle',
+	Red: 'red',
+	Green: 'green',
+	Blue: 'blue',
+	Yan: 'cyan',
+	Magenta: 'magenta',
+	Yellow: 'yellow',
+	White: 'white'
+}
+
 const EMPTY_LAMBDA = () => { /* nop */ }
 
 /**
@@ -46,19 +72,25 @@ class instance extends instance_skel {
 		super(system, id, config);
 
 		this.variables = {};
-		this.conenction = undefined
-		this.projector = undefined
+		this.conenction = undefined;
+		this.projector = undefined;
 
 		this.choiceInputs = this.buildList(ntcontrol.ProjectorInput);
 		this.choiceColorMatching = this.buildList(ntcontrol.ColorMatching);
 		this.choiceShutterFadeTimes = this.buildList(ntcontrol.ShutterFade);
 		this.choiceTestPattern = this.buildList(ntcontrol.TestPattern);
 		this.choiceGridMode = this.buildList(ntcontrol.DisplayGridLines);
+		this.choiceLampState = this.buildList(ntcontrol.LampControlStatus);
+
+		this.choiceOnOff = [
+			{ id: Constants.On, 	label: Constants.On },
+			{ id: Constants.Off, 	label: Constants.Off }
+		];
 
 		this.choiceToggle = [
-			{ id: 'on', 	label: 'On' },
-			{ id: 'off', 	label: 'Off' },
-			{ id: 'toggle', label: 'Toggle' }
+			{ id: Constants.On, 	label: Constants.On },
+			{ id: Constants.Off, 	label: Constants.Off },
+			{ id: Constants.Toggle, label: Constants.Toggle }
 		];
 
 		this.actions(); // export actions
@@ -74,33 +106,33 @@ class instance extends instance_skel {
 	actions() {
 		var actions = {};
 
-		actions['power'] = {
+		actions[Constants.Power] = {
 			label: 'Turn on/off Projector',
 			options: [
 				{
 					type: 'dropdown',
 					label: 'Mode',
 					id: 'mode',
-					default: 'toggle',
+					default: Constants.Toggle,
 					choices: this.choiceToggle
 				}
 			]
 		};
 
-		actions['shutter'] = {
+		actions[Constants.Shutter] = {
 			label: 'Turn the Projector shutter on/off',
 			options: [
 				{
 					type: 'dropdown',
 					label: 'Mode',
 					id: 'mode',
-					default: 'toggle',
+					default: Constants.Toggle,
 					choices: this.choiceToggle
 				}
 			]
 		};
 
-		actions['shutter_fade_in'] = {
+		actions[Constants.ShutterFadeIn] = {
 			label: 'Change the shutter fade-in time',
 			options: [
 				{
@@ -113,7 +145,7 @@ class instance extends instance_skel {
 			]
 		};
 
-		actions['shutter_fade_out'] = {
+		actions[Constants.ShutterFadeOut] = {
 			label: 'Change the shutter fade-out time',
 			options: [
 				{
@@ -126,33 +158,33 @@ class instance extends instance_skel {
 			]
 		};
 
-		actions['freeze'] = {
+		actions[Constants.Freeze] = {
 			label: 'Turn the Projector freeze on/off',
 			options: [
 				{
 					type: 'dropdown',
 					label: 'Mode',
 					id: 'mode',
-					default: 'toggle',
+					default: Constants.Toggle,
 					choices: this.choiceToggle
 				}
 			]
 		};
 
-		actions['input_source'] = {
+		actions[Constants.InputSource] = {
 			label: 'Change the Input Source',
 			options: [
 				{
 					type: 'dropdown',
 					label: 'Input Source',
-					id: 'source',
+					id: Constants.InputSource,
 					default: '',
 					choices: this.choiceInputs
 				}
 			]
 		};
 
-		actions['color_matching_mode'] = {
+		actions[Constants.ColorMatchingMode] = {
 			label: 'Change the Color Matching mode',
 			options: [
 				{
@@ -165,13 +197,13 @@ class instance extends instance_skel {
 			]
 		};
 
-		actions['color_matching_3c'] = {
+		actions[Constants.ColorMatching3Color] = {
 			label: 'Set colors in 3-Color-Mode',
 			options: [
 				{
 					type: 'textinput',
 					label: 'Red (R,G,B)',
-					id: 'red',
+					id: Constants.Red,
 					tooltip: 'Red',
 					default: DEFAULT_COLOR_RED,
 					regex: RGB_REGEX_STRING
@@ -179,7 +211,7 @@ class instance extends instance_skel {
 				{
 					type: 'textinput',
 					label: 'Green (R,G,B)',
-					id: 'green',
+					id: Constants.Green,
 					tooltip: 'Green',
 					default: DEFAULT_COLOR_GREEN,
 					regex: RGB_REGEX_STRING
@@ -187,7 +219,7 @@ class instance extends instance_skel {
 				{
 					type: 'textinput',
 					label: 'Blue (R,G,B)',
-					id: 'blue',
+					id: Constants.Blue,
 					tooltip: 'Blue',
 					default: DEFAULT_COLOR_BLUE,
 					regex: RGB_REGEX_STRING
@@ -195,13 +227,13 @@ class instance extends instance_skel {
 			]
 		};
 
-		actions['color_matching_7c'] = {
+		actions[Constants.ColorMatching7Color] = {
 			label: 'Set colors in 7-Color-Mode',
 			options: [
 				{
 					type: 'textinput',
 					label: 'Red (R,G,B)',
-					id: 'red',
+					id: Constants.Red,
 					tooltip: 'Red',
 					default: DEFAULT_COLOR_RED,
 					regex: RGB_REGEX_STRING
@@ -209,7 +241,7 @@ class instance extends instance_skel {
 				{
 					type: 'textinput',
 					label: 'Green (R,G,B)',
-					id: 'green',
+					id: Constants.Green,
 					tooltip: 'Green',
 					default: DEFAULT_COLOR_GREEN,
 					regex: RGB_REGEX_STRING
@@ -217,7 +249,7 @@ class instance extends instance_skel {
 				{
 					type: 'textinput',
 					label: 'Blue (R,G,B)',
-					id: 'blue',
+					id: Constants.Blue,
 					tooltip: 'Blue',
 					default: DEFAULT_COLOR_BLUE,
 					regex: RGB_REGEX_STRING
@@ -225,7 +257,7 @@ class instance extends instance_skel {
 				{
 					type: 'textinput',
 					label: 'Cyan (R,G,B)',
-					id: 'cyan',
+					id: Constants.Cyan,
 					tooltip: 'Cyan',
 					default: DEFAULT_COLOR_CYAN,
 					regex: RGB_REGEX_STRING
@@ -233,7 +265,7 @@ class instance extends instance_skel {
 				{
 					type: 'textinput',
 					label: 'Magenta (R,G,B)',
-					id: 'magenta',
+					id: Constants.Magenta,
 					tooltip: 'Magenta',
 					default: DEFAULT_COLOR_MAGNETA,
 					regex: RGB_REGEX_STRING
@@ -241,7 +273,7 @@ class instance extends instance_skel {
 				{
 					type: 'textinput',
 					label: 'Yellow (R,G,B)',
-					id: 'yellow',
+					id: Constants.Yellow,
 					tooltip: 'Yellow',
 					default: DEFAULT_COLOR_YELLOW,
 					regex: RGB_REGEX_STRING
@@ -249,7 +281,7 @@ class instance extends instance_skel {
 				{
 					type: 'textinput',
 					label: 'White (R,G,B)',
-					id: 'white',
+					id: Constants.White,
 					tooltip: 'White',
 					default: DEFAULT_COLOR_WHITE,
 					regex: RGB_REGEX_STRING
@@ -257,20 +289,20 @@ class instance extends instance_skel {
 			]
 		};
 
-		actions['test_pattern'] = {
+		actions[Constants.TestPattern] = {
 			label: 'Change The Test Pattern',
 			options: [
 				{
 					type: 'dropdown',
 					label: 'Test Pattern',
-					id: 'test_pattern',
+					id: Constants.TestPattern,
 					default: ntcontrol.TestPattern.Off,
 					choices: this.choiceTestPattern
 				}
 			]
 		};
 
-		actions['grid_display'] = {
+		actions[Constants.GridDisplay] = {
 			label: 'Change grid settings',
 			options: [
 				{
@@ -301,7 +333,7 @@ class instance extends instance_skel {
 			]
 		};
 
-		actions['brightness'] = {
+		actions[Constants.Brightness] = {
 			label: 'Change brightness control gain',
 			options: [
 				{
@@ -401,6 +433,8 @@ class instance extends instance_skel {
 		debug = this.debug;
 		
 		this.initVariables();
+		this.initFeedbacks();
+		this.initPresets();
 
 		if (this.connection !== undefined) {
 			this.connection.removeAllListeners();
@@ -428,34 +462,46 @@ class instance extends instance_skel {
 				this.setVariable('name', value);
 				break;
 			case 'Power':
-				this.setVariable('power', value);
+				this.setVariable(Constants.Power, value);
+				this.checkFeedbacks(Constants.Power);
 				break;
 			case 'Freeze':
-				this.setVariable('freeze', value);
+				this.setVariable(Constants.Freeze, value);
+				this.checkFeedbacks(Constants.Freeze);
 				break;
 			case 'Shutter':
-				this.setVariable('shutter', value);
+				this.setVariable(Constants.Shutter, value);
+				this.checkFeedbacks(Constants.Shutter);
 				break;
 			case 'InputSelect':
-				this.setVariable('input', value);
+				this.setVariable(Constants.InputSource, value);
+				this.checkFeedbacks(Constants.InputSource);
 				break;
 			case 'LampControlStatus':
-				this.setVariable('lamp_state', ntcontrol.enumValueToLabel(ntcontrol.LampControlStatus, value));
+				this.setVariable(Constants.LampStatus, ntcontrol.enumValueToLabel(ntcontrol.LampControlStatus, value));
+				this.checkFeedbacks(Constants.LampStatus);
 				break;
 			case 'BrightnessControl':
-				this.setVariable('brightness', value);
+				this.setVariable(Constants.Brightness, value);
+				this.checkFeedbacks(Constants.Brightness);
 				break;
 			case 'TestPattern':
-				this.setVariable('test_pattern', ntcontrol.enumValueToLabel(ntcontrol.TestPattern, value));
+				this.setVariable(Constants.TestPattern, ntcontrol.enumValueToLabel(ntcontrol.TestPattern, value));
+				this.checkFeedbacks(Constants.TestPattern);
 				break;
 			case 'ColorMatching':
-				this.setVariable('color_matching', ntcontrol.enumValueToLabel(ntcontrol.ColorMatching, value));
+				this.setVariable(Constants.ColorMatchingMode, ntcontrol.enumValueToLabel(ntcontrol.ColorMatching, value));
 				this.handleColorMatchingChanged(value);
+				this.checkFeedbacks(Constants.ColorMatchingMode);
+				this.checkFeedbacks(Constants.ColorMatching3Color);
+				this.checkFeedbacks(Constants.ColorMatching7Color);
 				break;
 			default:
 				var matches = /^ColorMatching(\d)Colors(Red|Green|Blue|Cyan|Magenta|Yellow|White)$/.exec(value)
 				if (matches.length === 3) {
-					this.setVariable('color_matching_' + matches[1] + 'c_' + matches[2].toLocaleLowerCase(), value);
+					this.setVariable(Constants.ColorMatchingMode + '_' + matches[1] + 'c_' + matches[2].toLocaleLowerCase(), value);
+					this.checkFeedbacks(Constants.ColorMatching3Color);
+					this.checkFeedbacks(Constants.ColorMatching7Color);
 				}
 				break;
 		}
@@ -545,72 +591,72 @@ class instance extends instance_skel {
 
 		try {
 			switch (action.action) {
-				case 'power':
-					if (opt.mode == 'on') {
+				case Constants.Power:
+					if (opt.mode == Constants.On) {
 						this.projector.setPower(true);
-					} else if (opt.mode == 'off') {
+					} else if (opt.mode == Constants.Off) {
 						this.projector.setPower(false);
-					} else if (opt.mode == 'toggle') {
+					} else if (opt.mode == Constants.Toggle) {
 						this.projector.setPower();
 					} else {
 						this.log('error', 'Invalid value for power command: ' + opt.mode)
 					}
 					break;
-				case 'shutter':
-					if (opt.mode == 'on') {
+				case Constants.Shutter:
+					if (opt.mode == Constants.On) {
 						this.projector.setShutter(true);
-					} else if (opt.mode == 'off') {
+					} else if (opt.mode == Constants.Off) {
 						this.projector.setShutter(false);
-					} else if (opt.mode == 'toggle') {
+					} else if (opt.mode == Constants.Toggle) {
 						this.projector.setShutter();
 					} else {
 						this.log('error', 'Invalid value for shutter command: ' + opt.mode)
 					}
 					break;
-				case 'shutter_fade_in':
+				case Constants.ShutterFadeIn:
 					this.sendValue(ntcontrol.ShutterFadeInCommand, opt.value);
 					break;
-				case 'shutter_fade_out':
+				case Constants.ShutterFadeOut:
 					this.sendValue(ntcontrol.ShutterFadeOutCommand, opt.value);
 					break;
-				case 'freeze':
-					if (opt.mode == 'on') {
+				case Constants.Freeze:
+					if (opt.mode == Constants.On) {
 						this.projector.setFreeze(true);
-					} else if (opt.mode == 'off') {
+					} else if (opt.mode == Constants.Off) {
 						this.projector.setFreeze(false);
-					} else if (opt.mode == 'toggle') {
+					} else if (opt.mode == Constants.Toggle) {
 						this.projector.setFreeze();
 					} else {
 						this.log('error', 'Invalid value for freeze command: ' + opt.mode)
 					}
 					break;
-				case 'input_source':
-					this.projector.setInput(opt.source);
+				case Constants.InputSource:
+					this.projector.setInput(opt[Constants.InputSource]);
 					break;
-				case 'test_pattern':
+				case Constants.TestPattern:
 					this.sendValue(ntcontrol.TestPatternCommand, opt.test_pattern);
 					break;
-				case 'color_matching_mode':
+				case Constants.ColorMatchingMode:
 					this.sendValue(ntcontrol.ColorMatchingCommand, opt.mode);
 					break;
-				case 'color_matching_mode_3c':
-					this.sendValue(ntcontrol.ColorMatching3ColorsRedCommand, ntcontrol.DefaultRgbConverter.parse(opt.red));
-					this.sendValue(ntcontrol.ColorMatching3ColorsGreenCommand, ntcontrol.DefaultRgbConverter.parse(opt.green));
-					this.sendValue(ntcontrol.ColorMatching3ColorsBlueCommand, ntcontrol.DefaultRgbConverter.parse(opt.blue));
+				case Constants.ColorMatching3Color:
+					this.sendValue(ntcontrol.ColorMatching3ColorsRedCommand, ntcontrol.DefaultRgbConverter.parse(opt[Constants.Red]));
+					this.sendValue(ntcontrol.ColorMatching3ColorsGreenCommand, ntcontrol.DefaultRgbConverter.parse(opt[Constants.Green]));
+					this.sendValue(ntcontrol.ColorMatching3ColorsBlueCommand, ntcontrol.DefaultRgbConverter.parse(opt[Constants.Blue]));
 					break;
-				case 'color_matching_mode_7c':
-					this.sendValue(ntcontrol.ColorMatching7ColorsRedCommand, ntcontrol.DefaultRgbConverter.parse(opt.red));
-					this.sendValue(ntcontrol.ColorMatching7ColorsGreenCommand, ntcontrol.DefaultRgbConverter.parse(opt.green));
-					this.sendValue(ntcontrol.ColorMatching7ColorsBlueCommand, ntcontrol.DefaultRgbConverter.parse(opt.blue));
-					this.sendValue(ntcontrol.ColorMatching7ColorsCyanCommand, ntcontrol.DefaultRgbConverter.parse(opt.cyan));
-					this.sendValue(ntcontrol.ColorMatching7ColorsMagentaCommand, ntcontrol.DefaultRgbConverter.parse(opt.magenta));
-					this.sendValue(ntcontrol.ColorMatching7ColorsYellowCommand, ntcontrol.DefaultRgbConverter.parse(opt.yellow));
-					this.sendValue(ntcontrol.ColorMatching7ColorsWhiteCommand, ntcontrol.DefaultRgbConverter.parse(opt.white));
+				case Constants.ColorMatching7Color:
+					this.sendValue(ntcontrol.ColorMatching7ColorsRedCommand, ntcontrol.DefaultRgbConverter.parse(opt[Constants.Red]));
+					this.sendValue(ntcontrol.ColorMatching7ColorsGreenCommand, ntcontrol.DefaultRgbConverter.parse(opt[Constants.Green]));
+					this.sendValue(ntcontrol.ColorMatching7ColorsBlueCommand, ntcontrol.DefaultRgbConverter.parse(opt[Constants.Blue]));
+					this.sendValue(ntcontrol.ColorMatching7ColorsCyanCommand, ntcontrol.DefaultRgbConverter.parse(opt[Constants.Cyan]));
+					this.sendValue(ntcontrol.ColorMatching7ColorsMagentaCommand, ntcontrol.DefaultRgbConverter.parse(opt[Constants.Magenta]));
+					this.sendValue(ntcontrol.ColorMatching7ColorsYellowCommand, ntcontrol.DefaultRgbConverter.parse(opt[Constants.Yellow]));
+					this.sendValue(ntcontrol.ColorMatching7ColorsWhiteCommand, ntcontrol.DefaultRgbConverter.parse(opt[Constants.White]));
 					break;
-				case 'grid_display':
+				case Constants.GridDisplay:
 					this.sendValue(ntcontrol.GridSettingsCommand, { verticalLines: opt.vertical, horizontalLines: opt.horizontal, mode: opt.mode });
 					break;
-				case 'brightness':
+				case Constants.Brightness:
 					this.sendValue(ntcontrol.BrightnessControlCommand, opt.value);
 					break;
 				default:
@@ -687,14 +733,149 @@ class instance extends instance_skel {
 	 * @access protected
 	 * @since 1.1.0
 	 */
-	/*
 	initFeedbacks() {
 		// feedbacks
 		var feedbacks = {};
 
-		feedbacks['input_bg'] = {
-			label: 'Change background color by destination',
-			description: 'If the input specified is in use by the output specified, change background color of the bank',
+		feedbacks[Constants.LampStatus] = {
+			label: 'Change background color by lamp status',
+			description: 'If the state of the projector lamps matches the specified value, change background color of the bank',
+			options: [
+				{
+					type: 'colorpicker',
+					label: 'Foreground color',
+					id: 'fg',
+					default: this.rgb(0,0,0)
+				},
+				{
+					type: 'colorpicker',
+					label: 'Background color',
+					id: 'bg',
+					default: this.rgb(0,255,0)
+				},
+				{
+					type: 'dropdown',
+					label: 'Lamp state',
+					id: 'state',
+					default: ntcontrol.LampControlStatus['LAMP ON'],
+					choices: this.choiceLampState
+				}
+			],
+			callback: (feedback) => {
+				if (this.variables[Constants.LampStatus] === feedback.options.state) {
+					return {
+						color: feedback.options.fg,
+						bgcolor: feedback.options.bg
+					};
+				}
+			}
+		};
+
+		feedbacks[Constants.Power] = {
+			label: 'Change background color by power status',
+			description: 'If the state of the projector (power) matches the specified value, change background color of the bank',
+			options: [
+				{
+					type: 'colorpicker',
+					label: 'Foreground color',
+					id: 'fg',
+					default: this.rgb(0,0,0)
+				},
+				{
+					type: 'colorpicker',
+					label: 'Background color',
+					id: 'bg',
+					default: this.rgb(255,0,0)
+				},
+				{
+					type: 'dropdown',
+					label: 'Power state',
+					id: 'state',
+					default: Constants.On,
+					choices: this.choiceOnOff
+				}
+			],
+			callback: (feedback) => {
+				if (this.variables[Constants.Power] === (feedback.options.state === Constants.On)) {
+					return {
+						color: feedback.options.fg,
+						bgcolor: feedback.options.bg
+					};
+				}
+			}
+		};
+
+		feedbacks[Constants.Shutter] = {
+			label: 'Change background color by shutter status',
+			description: 'If the state of the projector shutter matches the specified value, change background color of the bank',
+			options: [
+				{
+					type: 'colorpicker',
+					label: 'Foreground color',
+					id: 'fg',
+					default: this.rgb(0,0,0)
+				},
+				{
+					type: 'colorpicker',
+					label: 'Background color',
+					id: 'bg',
+					default: this.rgb(255,0,0)
+				},
+				{
+					type: 'dropdown',
+					label: 'Shutter state',
+					id: 'state',
+					default: Constants.On,
+					choices: this.choiceOnOff
+				}
+			],
+			callback: (feedback) => {
+				if (this.variables[Constants.Shutter] === (feedback.options.state === Constants.On)) {
+					return {
+						color: feedback.options.fg,
+						bgcolor: feedback.options.bg
+					};
+				}
+			}
+		};
+
+		feedbacks[Constants.Freeze] = {
+			label: 'Change background color by freeze status',
+			description: 'If the state of the projector freeze matches the specified value, change background color of the bank',
+			options: [
+				{
+					type: 'colorpicker',
+					label: 'Foreground color',
+					id: 'fg',
+					default: this.rgb(0,0,0)
+				},
+				{
+					type: 'colorpicker',
+					label: 'Background color',
+					id: 'bg',
+					default: this.rgb(255,0,0)
+				},
+				{
+					type: 'dropdown',
+					label: 'Freeze state',
+					id: 'state',
+					default: Constants.On,
+					choices: this.choiceOnOff
+				}
+			],
+			callback: (feedback) => {
+				if (this.variables[Constants.Freeze] === (feedback.options.state === Constants.On)) {
+					return {
+						color: feedback.options.fg,
+						bgcolor: feedback.options.bg
+					};
+				}
+			}
+		};
+
+		feedbacks[Constants.InputSource] = {
+			label: 'Change background color by input selection',
+			description: 'If the selected input of the projector matches the specified value, change background color of the bank',
 			options: [
 				{
 					type: 'colorpicker',
@@ -711,20 +892,13 @@ class instance extends instance_skel {
 				{
 					type: 'dropdown',
 					label: 'Input',
-					id: 'input',
-					default: '0',
-					choices: this.CHOICES_INPUTS
-				},
-				{
-					type: 'dropdown',
-					label: 'Output',
-					id: 'output',
-					default: '0',
-					choices: this.CHOICES_OUTPUTS
+					id: Constants.InputSource,
+					default: '',
+					choices: this.choiceInputs
 				}
 			],
-			callback: (feedback, bank) => {
-				if (true) {
+			callback: (feedback) => {
+				if (this.variables[Constants.InputSource] === feedback.options[Constants.InputSource]) {
 					return {
 						color: feedback.options.fg,
 						bgcolor: feedback.options.bg
@@ -733,9 +907,9 @@ class instance extends instance_skel {
 			}
 		};
 
-		feedbacks['selected_destination'] = {
-			label: 'Change background color by selected destination',
-			description: 'If the input specified is in use by the selected output specified, change background color of the bank',
+		feedbacks[Constants.TestPattern] = {
+			label: 'Change background color by current test pattern',
+			description: 'If the current test pattern of the projector matches the specified value, change background color of the bank',
 			options: [
 				{
 					type: 'colorpicker',
@@ -751,14 +925,14 @@ class instance extends instance_skel {
 				},
 				{
 					type: 'dropdown',
-					label: 'Output',
-					id: 'output',
-					default: '0',
-					choices: this.CHOICES_OUTPUTS
+					label: 'Test pattern',
+					id: Constants.TestPattern,
+					default: ntcontrol.TestPattern.Off,
+					choices: this.choiceTestPattern
 				}
 			],
-			callback: (feedback, bank) => {
-				if (parseInt(feedback.options.output) == this.selected) {
+			callback: (feedback) => {
+				if (this.variables[Constants.TestPattern] === feedback.options[Constants.TestPattern]) {
 					return {
 						color: feedback.options.fg,
 						bgcolor: feedback.options.bg
@@ -767,9 +941,9 @@ class instance extends instance_skel {
 			}
 		};
 
-		feedbacks['selected_source'] = {
-			label: 'Change background color by route to selected destination',
-			description: 'If the input specified is in use by the selected output specified, change background color of the bank',
+		feedbacks[Constants.ColorMatchingMode] = {
+			label: 'Change background color by current color matching mode',
+			description: 'If the current color matching mode matches the specified value, change background color of the bank',
 			options: [
 				{
 					type: 'colorpicker',
@@ -781,18 +955,199 @@ class instance extends instance_skel {
 					type: 'colorpicker',
 					label: 'Background color',
 					id: 'bg',
-					default: this.rgb(255,255,255)
+					default: this.rgb(255,255,0)
 				},
 				{
 					type: 'dropdown',
-					label: 'Input',
-					id: 'input',
-					default: '0',
-					choices: this.CHOICES_INPUTS
+					label: 'Color matching mode',
+					id: 'mode',
+					default: ntcontrol.ColorMatching.OFF,
+					choices: this.choiceColorMatching
 				}
 			],
-			callback: (feedback, bank) => {
-				if (true) {
+			callback: (feedback) => {
+				if (this.variables[Constants.ColorMatchingMode] === feedback.options.mode) {
+					return {
+						color: feedback.options.fg,
+						bgcolor: feedback.options.bg
+					};
+				}
+			}
+		};
+
+		feedbacks[Constants.ColorMatching3Color] = {
+			label: 'Change background color by current color values for 3 color matching mode',
+			description: 'If the current color values for 3 color matching mode matches the specified value, change background color of the bank',
+			options: [
+				{
+					type: 'colorpicker',
+					label: 'Foreground color',
+					id: 'fg',
+					default: this.rgb(0,0,0)
+				},
+				{
+					type: 'colorpicker',
+					label: 'Background color',
+					id: 'bg',
+					default: this.rgb(255,255,0)
+				},
+				{
+					type: 'textinput',
+					label: 'Red (R,G,B)',
+					id: Constants.Red,
+					tooltip: 'Red',
+					default: DEFAULT_COLOR_RED,
+					regex: RGB_REGEX_STRING
+				},
+				{
+					type: 'textinput',
+					label: 'Green (R,G,B)',
+					id: Constants.Green,
+					tooltip: 'Green',
+					default: DEFAULT_COLOR_GREEN,
+					regex: RGB_REGEX_STRING
+				},
+				{
+					type: 'textinput',
+					label: 'Blue (R,G,B)',
+					id: Constants.Blue,
+					tooltip: 'Blue',
+					default: DEFAULT_COLOR_BLUE,
+					regex: RGB_REGEX_STRING
+				}
+			],
+			callback: (feedback) => {
+				if (this.variables[Constants.ColorMatchingMode] === ntcontrol.ColorMatching['3COLORS']
+					&& this.variables[Constants.ColorMatching3Color + '_' + Constants.Red] === feedback.options[Constants.Red]
+					&& this.variables[Constants.ColorMatching3Color + '_' + Constants.Green] === feedback.options[Constants.Green]
+					&& this.variables[Constants.ColorMatching3Color + '_' + Constants.Blue] === feedback.options[Constants.Blue]) {
+					return {
+						color: feedback.options.fg,
+						bgcolor: feedback.options.bg
+					};
+				}
+			}
+		};
+
+		feedbacks[Constants.ColorMatching7Color] = {
+			label: 'Change background color by current color values for 7 color matching mode',
+			description: 'If the current color values for 7 color matching mode matches the specified value, change background color of the bank',
+			options: [
+				{
+					type: 'colorpicker',
+					label: 'Foreground color',
+					id: 'fg',
+					default: this.rgb(0,0,0)
+				},
+				{
+					type: 'colorpicker',
+					label: 'Background color',
+					id: 'bg',
+					default: this.rgb(255,255,0)
+				},
+				{
+					type: 'textinput',
+					label: 'Red (R,G,B)',
+					id: Constants.Red,
+					tooltip: 'Red',
+					default: DEFAULT_COLOR_RED,
+					regex: RGB_REGEX_STRING
+				},
+				{
+					type: 'textinput',
+					label: 'Green (R,G,B)',
+					id: Constants.Green,
+					tooltip: 'Green',
+					default: DEFAULT_COLOR_GREEN,
+					regex: RGB_REGEX_STRING
+				},
+				{
+					type: 'textinput',
+					label: 'Blue (R,G,B)',
+					id: Constants.Blue,
+					tooltip: 'Blue',
+					default: DEFAULT_COLOR_BLUE,
+					regex: RGB_REGEX_STRING
+				},
+				{
+					type: 'textinput',
+					label: 'Cyan (R,G,B)',
+					id: Constants.Cyan,
+					tooltip: 'Cyan',
+					default: DEFAULT_COLOR_CYAN,
+					regex: RGB_REGEX_STRING
+				},
+				{
+					type: 'textinput',
+					label: 'Magenta (R,G,B)',
+					id: Constants.Magenta,
+					tooltip: 'Magenta',
+					default: DEFAULT_COLOR_MAGNETA,
+					regex: RGB_REGEX_STRING
+				},
+				{
+					type: 'textinput',
+					label: 'Yellow (R,G,B)',
+					id: Constants.Yellow,
+					tooltip: 'Yellow',
+					default: DEFAULT_COLOR_YELLOW,
+					regex: RGB_REGEX_STRING
+				},
+				{
+					type: 'textinput',
+					label: 'White (R,G,B)',
+					id: Constants.White,
+					tooltip: 'White',
+					default: DEFAULT_COLOR_WHITE,
+					regex: RGB_REGEX_STRING
+				}
+			],
+			callback: (feedback) => {
+				if (this.variables[Constants.ColorMatchingMode] === ntcontrol.ColorMatching['7COLORS']
+					&& this.variables[Constants.ColorMatching7Color + '_' + Constants.Red] === feedback.options[Constants.Red]
+					&& this.variables[Constants.ColorMatching7Color + '_' + Constants.Green] === feedback.options[Constants.Green]
+					&& this.variables[Constants.ColorMatching7Color + '_' + Constants.Blue] === feedback.options[Constants.Blue]
+					&& this.variables[Constants.ColorMatching7Color + '_' + Constants.Cyan] === feedback.options[Constants.Cyan]
+					&& this.variables[Constants.ColorMatching7Color + '_' + Constants.Magenta] === feedback.options[Constants.Magenta]
+					&& this.variables[Constants.ColorMatching7Color + '_' + Constants.Yellow] === feedback.options[Constants.Yellow]
+					&& this.variables[Constants.ColorMatching7Color + '_' + Constants.White] === feedback.options[Constants.White]) {
+					return {
+						color: feedback.options.fg,
+						bgcolor: feedback.options.bg
+					};
+				}
+			}
+		};
+
+		feedbacks[Constants.Brightness] = {
+			label: 'Change background color by current brightness',
+			description: 'If the current brightness of the projector matches the specified value, change background color of the bank',
+			options: [
+				{
+					type: 'colorpicker',
+					label: 'Foreground color',
+					id: 'fg',
+					default: this.rgb(0,0,0)
+				},
+				{
+					type: 'colorpicker',
+					label: 'Background color',
+					id: 'bg',
+					default: this.rgb(255,255,0)
+				},
+				{
+					type: 'number',
+					label: 'Brightness',
+					id: 'value',
+					min: 20,
+					max: 100,
+					default: 100,
+					required: true,
+					range: true
+				}
+			],
+			callback: (feedback) => {
+				if (this.variables[Constants.Brightness] === feedback.options.value) {
 					return {
 						color: feedback.options.fg,
 						bgcolor: feedback.options.bg
@@ -802,7 +1157,7 @@ class instance extends instance_skel {
 		};
 
 		this.setFeedbackDefinitions(feedbacks);
-	}*/
+	}
 
 	setVariable(name, value) {
 		// var changed = this.variables[name] !== value;
@@ -811,19 +1166,19 @@ class instance extends instance_skel {
 	}
 
 	setDefaultValues3Color() {
-		this.setVariable('color_matching_3c_red', DEFAULT_COLOR_RED);
-		this.setVariable('color_matching_3c_green', DEFAULT_COLOR_GREEN);
-		this.setVariable('color_matching_3c_blue', DEFAULT_COLOR_BLUE);
+		this.setVariable(Constants.ColorMatching3Color + '_' + Constants.Red, DEFAULT_COLOR_RED);
+		this.setVariable(Constants.ColorMatching3Color + '_' + Constants.Green, DEFAULT_COLOR_GREEN);
+		this.setVariable(Constants.ColorMatching3Color + '_' + Constants.Blue, DEFAULT_COLOR_BLUE);
 	}
 
 	setDefaultValues7Color() {
-		this.setVariable('color_matching_7c_red', DEFAULT_COLOR_RED);
-		this.setVariable('color_matching_7c_green', DEFAULT_COLOR_GREEN);
-		this.setVariable('color_matching_7c_blue', DEFAULT_COLOR_BLUE);
-		this.setVariable('color_matching_7c_cyan', DEFAULT_COLOR_CYAN);
-		this.setVariable('color_matching_7c_magenta', DEFAULT_COLOR_MAGNETA);
-		this.setVariable('color_matching_7c_yellow', DEFAULT_COLOR_YELLOW);
-		this.setVariable('color_matching_7c_white', DEFAULT_COLOR_WHITE);
+		this.setVariable(Constants.ColorMatching7Color + '_' + Constants.Red, DEFAULT_COLOR_RED);
+		this.setVariable(Constants.ColorMatching7Color + '_' + Constants.Green, DEFAULT_COLOR_GREEN);
+		this.setVariable(Constants.ColorMatching7Color + '_' + Constants.Blue, DEFAULT_COLOR_BLUE);
+		this.setVariable(Constants.ColorMatching7Color + '_' + Constants.Cyan, DEFAULT_COLOR_CYAN);
+		this.setVariable(Constants.ColorMatching7Color + '_' + Constants.Magenta, DEFAULT_COLOR_MAGNETA);
+		this.setVariable(Constants.ColorMatching7Color + '_' + Constants.Yellow, DEFAULT_COLOR_YELLOW);
+		this.setVariable(Constants.ColorMatching7Color + '_' + Constants.White, DEFAULT_COLOR_WHITE);
 	}
 
 	/**
@@ -849,106 +1204,272 @@ class instance extends instance_skel {
 
 		variables.push({
 			label: 'Power state',
-			name: 'power'
+			name: Constants.Power
 		});
-		this.setVariable('power', undefined);
+		this.setVariable(Constants.Power, undefined);
 
 		variables.push({
 			label: 'Shutter state',
-			name: 'shutter'
+			name: Constants.Shutter
 		});
-		this.setVariable('shutter', undefined);
+		this.setVariable(Constants.Shutter, undefined);
 
 		variables.push({
 			label: 'Freeze state',
-			name: 'freeze'
+			name: Constants.Freeze
 		});
-		this.setVariable('freeze', undefined);
+		this.setVariable(Constants.Freeze, undefined);
 
 		variables.push({
 			label: 'Input',
-			name: 'input'
+			name: Constants.InputSource
 		});
-		this.setVariable('input', '');
+		this.setVariable(Constants.InputSource, '');
 
 		variables.push({
 			label: 'Lamp state',
-			name: 'lamp_state'
+			name: Constants.LampStatus
 		});
-		this.setVariable('lamp_state', undefined);
+		this.setVariable(Constants.LampStatus, undefined);
 
 		variables.push({
 			label: 'Brightness',
-			name: 'brightness'
+			name: Constants.Brightness
 		});
-		this.setVariable('brightness', 100);
+		this.setVariable(Constants.Brightness, 100);
 
 		variables.push({
 			label: 'Test Pattern',
-			name: 'test_pattern'
+			name: Constants.TestPattern
 		});
-		this.setVariable('test_pattern', ntcontrol.TestPattern.Off);
+		this.setVariable(Constants.TestPattern, ntcontrol.TestPattern.Off);
 
 		variables.push({
 			label: 'Color Matching Mode',
-			name: 'color_matching'
+			name: Constants.ColorMatchingMode
 		});
-		this.setVariable('color_matching', ntcontrol.ColorMatching.Off);
+		this.setVariable(Constants.ColorMatchingMode, ntcontrol.ColorMatching.Off);
 
 		variables.push({
 			label: 'Color Matching 3-Colors: Red',
-			name: 'color_matching_3c_red'
+			name: Constants.ColorMatching3Color + '_' + Constants.Red
 		});
 
 		variables.push({
 			label: 'Color Matching 3-Colors: Green',
-			name: 'color_matching_3c_green'
+			name: Constants.ColorMatching3Color + '_' + Constants.Green
 		});
 
 		variables.push({
 			label: 'Color Matching 3-Colors: Blue',
-			name: 'color_matching_3c_blue'
+			name: Constants.ColorMatching3Color + '_' + Constants.Blue
 		});
 
 		variables.push({
 			label: 'Color Matching 7-Colors: Red',
-			name: 'color_matching_7c_red'
+			name: Constants.ColorMatching7Color + '_' + Constants.Red
 		});
 
 		variables.push({
 			label: 'Color Matching 7-Colors: Green',
-			name: 'color_matching_7c_green'
+			name: Constants.ColorMatching7Color + '_' + Constants.Green
 		});
 
 		variables.push({
 			label: 'Color Matching 7-Colors: Blue',
-			name: 'color_matching_7c_blue'
+			name: Constants.ColorMatching7Color + '_' + Constants.Blue
 		});
 
 		variables.push({
 			label: 'Color Matching 7-Colors: Cyan',
-			name: 'color_matching_7c_cyan'
+			name: Constants.ColorMatching7Color + '_' + Constants.Cyan
 		});
 
 		variables.push({
 			label: 'Color Matching 7-Colors: Magenta',
-			name: 'color_matching_7c_cyan'
+			name: Constants.ColorMatching7Color + '_' + Constants.Cyan
 		});
 
 		variables.push({
 			label: 'Color Matching 7-Colors: Yellow',
-			name: 'color_matching_7c_yellow'
+			name: Constants.ColorMatching7Color + '_' + Constants.Yellow
 		});
 
 		variables.push({
 			label: 'Color Matching 7-Colors: White',
-			name: 'color_matching_7c_white'
+			name: Constants.ColorMatching7Color + '_' + Constants.White
 		});
 		
 		this.setDefaultValues3Color();
 		this.setDefaultValues7Color();
 
 		this.setVariableDefinitions(variables);
+	}
+
+	/**
+	 * INTERNAL: initialize presets.
+	 *
+	 * @access protected
+	 * @since 1.1.1
+	 */
+	initPresets () {
+		var presets = [];
+
+		presets.push({
+			category: 'Commands',
+			label: 'Power Toggle',
+			bank: {
+				style: 'text',
+				text: 'Power Toggle',
+				size: '18',
+				color: this.rgb(255,255,255),
+				bgcolor: this.rgb(0,0,0)
+			},
+			feedbacks: [
+				{
+					type: Constants.Power,
+					options: {
+						bg: this.rgb(255,0,0),
+						fg: this.rgb(255,255,255),
+						state: Constants.On
+					}
+				}
+			],
+			actions: [
+				{
+					action: Constants.Power,
+					options: {
+						mode: Constants.Toggle
+					}
+				}
+			]
+		});
+
+		presets.push({
+			category: 'Commands',
+			label: 'Shutter Toggle',
+			bank: {
+				style: 'text',
+				text: 'Shutter Toggle',
+				size: '18',
+				color: this.rgb(255,255,255),
+				bgcolor: this.rgb(0,0,0)
+			},
+			feedbacks: [
+				{
+					type: Constants.Shutter,
+					options: {
+						bg: this.rgb(255,0,0),
+						fg: this.rgb(255,255,255),
+						state: Constants.On
+					}
+				}
+			],
+			actions: [
+				{
+					action: Constants.Shutter,
+					options: {
+						mode: Constants.Toggle
+					}
+				}
+			]
+		});
+
+		presets.push({
+			category: 'Commands',
+			label: 'Freeze Toggle',
+			bank: {
+				style: 'text',
+				text: 'Freeze Toggle',
+				size: '18',
+				color: this.rgb(255,255,255),
+				bgcolor: this.rgb(0,0,0)
+			},
+			feedbacks: [
+				{
+					type: Constants.Freeze,
+					options: {
+						bg: this.rgb(255,0,0),
+						fg: this.rgb(255,255,255),
+						state: Constants.On
+					}
+				}
+			],
+			actions: [
+				{
+					action: Constants.Freeze,
+					options: {
+						mode: Constants.Toggle
+					}
+				}
+			]
+		});
+
+		for (let input of this.choiceInputs) {
+			presets.push({
+				category: 'Input source',
+				label: 'Selection of input ' + input.label,
+				bank: {
+					style: 'text',
+					text: 'Input ' + input.label,
+					size: '18',
+					color: this.rgb(255,255,255),
+					bgcolor: this.rgb(0,0,0)
+				},
+				feedbacks: [
+					{
+						type: Constants.InputSource,
+						options: {
+							bg: this.rgb(255,255,0),
+							fg: this.rgb(0,0,0),
+							[Constants.InputSource]: input.id
+						}
+					}
+				],
+				actions: [
+					{
+						action: Constants.InputSource,
+						options: {
+							[Constants.InputSource]: input.id
+						}
+					}
+				]
+			});
+		}
+
+		for (let pattern of this.choiceTestPattern) {
+			presets.push({
+				category: 'Test pattern',
+				label: 'Selection of test pattern ' + pattern.label,
+				bank: {
+					style: 'text',
+					text: 'Pattern ' + pattern.label,
+					size: '18',
+					color: this.rgb(255,255,255),
+					bgcolor: this.rgb(0,0,0)
+				},
+				feedbacks: [
+					{
+						type: Constants.TestPattern,
+						options: {
+							bg: this.rgb(255,255,0),
+							fg: this.rgb(0,0,0),
+							[Constants.TestPattern]: pattern.id
+						}
+					}
+				],
+				actions: [
+					{
+						action: Constants.TestPattern,
+						options: {
+							[Constants.TestPattern]: pattern.id
+						}
+					}
+				]
+			});
+		}
+
+		this.setPresetDefinitions(presets);
 	}
 }
 exports = module.exports = instance;
