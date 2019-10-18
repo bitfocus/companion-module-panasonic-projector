@@ -33,7 +33,7 @@ const Constants = {
 	Red: 'red',
 	Green: 'green',
 	Blue: 'blue',
-	Yan: 'cyan',
+	Cyan: 'cyan',
 	Magenta: 'magenta',
 	Yellow: 'yellow',
 	White: 'white'
@@ -932,7 +932,7 @@ class instance extends instance_skel {
 				}
 			],
 			callback: (feedback) => {
-				if (this.variables[Constants.TestPattern] === feedback.options[Constants.TestPattern]) {
+				if (ntcontrol.TestPattern[this.variables[Constants.TestPattern]] === feedback.options[Constants.TestPattern]) {
 					return {
 						color: feedback.options.fg,
 						bgcolor: feedback.options.bg
@@ -1287,7 +1287,7 @@ class instance extends instance_skel {
 
 		variables.push({
 			label: 'Color Matching 7-Colors: Magenta',
-			name: Constants.ColorMatching7Color + '_' + Constants.Cyan
+			name: Constants.ColorMatching7Color + '_' + Constants.Magenta
 		});
 
 		variables.push({
