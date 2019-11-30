@@ -41,6 +41,35 @@ const Constants = {
 
 const EMPTY_LAMBDA = () => { /* nop */ }
 
+function foregroundPicker(defaultValue) {
+	return {
+		type: 'colorpicker',
+		label: 'Foreground color',
+		id: 'fg',
+		default: defaultValue
+	}
+}
+
+function backgroundPicker(defaultValue) {
+	return {
+		type: 'colorpicker',
+		label: 'Background color',
+		id: 'bg',
+		default: defaultValue
+	}
+}
+
+function rgbTextInput(id, label, defaultValue) {
+	return {
+		type: 'textinput',
+		label: label + ' (R,G,B)',
+		id: id,
+		tooltip: label,
+		default: defaultValue,
+		regex: RGB_REGEX_STRING
+	}
+}
+
 /**
  * Companion instance class for the Panasonic Projectors.
  *
@@ -200,92 +229,22 @@ class instance extends instance_skel {
 		actions[Constants.ColorMatching3Color] = {
 			label: 'Set colors in 3-Color-Mode',
 			options: [
-				{
-					type: 'textinput',
-					label: 'Red (R,G,B)',
-					id: Constants.Red,
-					tooltip: 'Red',
-					default: DEFAULT_COLOR_RED,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'Green (R,G,B)',
-					id: Constants.Green,
-					tooltip: 'Green',
-					default: DEFAULT_COLOR_GREEN,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'Blue (R,G,B)',
-					id: Constants.Blue,
-					tooltip: 'Blue',
-					default: DEFAULT_COLOR_BLUE,
-					regex: RGB_REGEX_STRING
-				}
+				rgbTextInput(Constants.Red, 'Red', DEFAULT_COLOR_RED),
+				rgbTextInput(Constants.Green, 'Green', DEFAULT_COLOR_GREEN),
+				rgbTextInput(Constants.Blue, 'Blue', DEFAULT_COLOR_BLUE)
 			]
 		};
 
 		actions[Constants.ColorMatching7Color] = {
 			label: 'Set colors in 7-Color-Mode',
 			options: [
-				{
-					type: 'textinput',
-					label: 'Red (R,G,B)',
-					id: Constants.Red,
-					tooltip: 'Red',
-					default: DEFAULT_COLOR_RED,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'Green (R,G,B)',
-					id: Constants.Green,
-					tooltip: 'Green',
-					default: DEFAULT_COLOR_GREEN,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'Blue (R,G,B)',
-					id: Constants.Blue,
-					tooltip: 'Blue',
-					default: DEFAULT_COLOR_BLUE,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'Cyan (R,G,B)',
-					id: Constants.Cyan,
-					tooltip: 'Cyan',
-					default: DEFAULT_COLOR_CYAN,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'Magenta (R,G,B)',
-					id: Constants.Magenta,
-					tooltip: 'Magenta',
-					default: DEFAULT_COLOR_MAGNETA,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'Yellow (R,G,B)',
-					id: Constants.Yellow,
-					tooltip: 'Yellow',
-					default: DEFAULT_COLOR_YELLOW,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'White (R,G,B)',
-					id: Constants.White,
-					tooltip: 'White',
-					default: DEFAULT_COLOR_WHITE,
-					regex: RGB_REGEX_STRING
-				}
+				rgbTextInput(Constants.Red, 'Red', DEFAULT_COLOR_RED),
+				rgbTextInput(Constants.Green, 'Green', DEFAULT_COLOR_GREEN),
+				rgbTextInput(Constants.Blue, 'Blue', DEFAULT_COLOR_BLUE),
+				rgbTextInput(Constants.Cyan, 'Cyan', DEFAULT_COLOR_CYAN),
+				rgbTextInput(Constants.Magenta, 'Magenta', DEFAULT_COLOR_MAGNETA),
+				rgbTextInput(Constants.Yellow, 'Yellow', DEFAULT_COLOR_YELLOW),
+				rgbTextInput(Constants.White, 'White', DEFAULT_COLOR_WHITE)
 			]
 		};
 
@@ -497,9 +456,9 @@ class instance extends instance_skel {
 				this.checkFeedbacks(Constants.ColorMatching7Color);
 				break;
 			default:
-				var matches = /^ColorMatching(\d)Colors(Red|Green|Blue|Cyan|Magenta|Yellow|White)$/.exec(value)
+				var matches = /^ColorMatching(\d)Colors(Red|Green|Blue|Cyan|Magenta|Yellow|White)$/.exec(field)
 				if (matches.length === 3) {
-					this.setVariable(Constants.ColorMatchingMode + '_' + matches[1] + 'c_' + matches[2].toLocaleLowerCase(), value);
+					this.setVariable(Constants.ColorMatchingMode + '_' + matches[1] + 'c_' + matches[2].toLocaleLowerCase(), value.R + ',' + value.G + ',' + value.B);
 					this.checkFeedbacks(Constants.ColorMatching3Color);
 					this.checkFeedbacks(Constants.ColorMatching7Color);
 				}
@@ -664,7 +623,7 @@ class instance extends instance_skel {
 					break;
 			}		
 		} catch (e) {
-			this.log('error', e);
+			this.log('error', e.message ? e.message : e);
 		}
 	}
 
@@ -741,18 +700,8 @@ class instance extends instance_skel {
 			label: 'Change background color by lamp status',
 			description: 'If the state of the projector lamps matches the specified value, change background color of the bank',
 			options: [
-				{
-					type: 'colorpicker',
-					label: 'Foreground color',
-					id: 'fg',
-					default: this.rgb(0,0,0)
-				},
-				{
-					type: 'colorpicker',
-					label: 'Background color',
-					id: 'bg',
-					default: this.rgb(0,255,0)
-				},
+				foregroundPicker(this.rgb(0,0,0)),
+				backgroundPicker(this.rgb(0,255,0)),
 				{
 					type: 'dropdown',
 					label: 'Lamp state',
@@ -775,18 +724,8 @@ class instance extends instance_skel {
 			label: 'Change background color by power status',
 			description: 'If the state of the projector (power) matches the specified value, change background color of the bank',
 			options: [
-				{
-					type: 'colorpicker',
-					label: 'Foreground color',
-					id: 'fg',
-					default: this.rgb(0,0,0)
-				},
-				{
-					type: 'colorpicker',
-					label: 'Background color',
-					id: 'bg',
-					default: this.rgb(255,0,0)
-				},
+				foregroundPicker(this.rgb(0,0,0)),
+				backgroundPicker(this.rgb(255,0,0)),
 				{
 					type: 'dropdown',
 					label: 'Power state',
@@ -809,18 +748,8 @@ class instance extends instance_skel {
 			label: 'Change background color by shutter status',
 			description: 'If the state of the projector shutter matches the specified value, change background color of the bank',
 			options: [
-				{
-					type: 'colorpicker',
-					label: 'Foreground color',
-					id: 'fg',
-					default: this.rgb(0,0,0)
-				},
-				{
-					type: 'colorpicker',
-					label: 'Background color',
-					id: 'bg',
-					default: this.rgb(255,0,0)
-				},
+				foregroundPicker(this.rgb(0,0,0)),
+				backgroundPicker(this.rgb(255,0,0)),
 				{
 					type: 'dropdown',
 					label: 'Shutter state',
@@ -843,18 +772,8 @@ class instance extends instance_skel {
 			label: 'Change background color by freeze status',
 			description: 'If the state of the projector freeze matches the specified value, change background color of the bank',
 			options: [
-				{
-					type: 'colorpicker',
-					label: 'Foreground color',
-					id: 'fg',
-					default: this.rgb(0,0,0)
-				},
-				{
-					type: 'colorpicker',
-					label: 'Background color',
-					id: 'bg',
-					default: this.rgb(255,0,0)
-				},
+				foregroundPicker(this.rgb(0,0,0)),
+				backgroundPicker(this.rgb(255,0,0)),
 				{
 					type: 'dropdown',
 					label: 'Freeze state',
@@ -877,18 +796,8 @@ class instance extends instance_skel {
 			label: 'Change background color by input selection',
 			description: 'If the selected input of the projector matches the specified value, change background color of the bank',
 			options: [
-				{
-					type: 'colorpicker',
-					label: 'Foreground color',
-					id: 'fg',
-					default: this.rgb(0,0,0)
-				},
-				{
-					type: 'colorpicker',
-					label: 'Background color',
-					id: 'bg',
-					default: this.rgb(255,255,0)
-				},
+				foregroundPicker(this.rgb(0,0,0)),
+				backgroundPicker(this.rgb(255,255,0)),
 				{
 					type: 'dropdown',
 					label: 'Input',
@@ -911,18 +820,8 @@ class instance extends instance_skel {
 			label: 'Change background color by current test pattern',
 			description: 'If the current test pattern of the projector matches the specified value, change background color of the bank',
 			options: [
-				{
-					type: 'colorpicker',
-					label: 'Foreground color',
-					id: 'fg',
-					default: this.rgb(0,0,0)
-				},
-				{
-					type: 'colorpicker',
-					label: 'Background color',
-					id: 'bg',
-					default: this.rgb(255,255,0)
-				},
+				foregroundPicker(this.rgb(0,0,0)),
+				backgroundPicker(this.rgb(255,255,0)),
 				{
 					type: 'dropdown',
 					label: 'Test pattern',
@@ -945,18 +844,8 @@ class instance extends instance_skel {
 			label: 'Change background color by current color matching mode',
 			description: 'If the current color matching mode matches the specified value, change background color of the bank',
 			options: [
-				{
-					type: 'colorpicker',
-					label: 'Foreground color',
-					id: 'fg',
-					default: this.rgb(0,0,0)
-				},
-				{
-					type: 'colorpicker',
-					label: 'Background color',
-					id: 'bg',
-					default: this.rgb(255,255,0)
-				},
+				foregroundPicker(this.rgb(0,0,0)),
+				backgroundPicker(this.rgb(255,255,0)),
 				{
 					type: 'dropdown',
 					label: 'Color matching mode',
@@ -966,7 +855,7 @@ class instance extends instance_skel {
 				}
 			],
 			callback: (feedback) => {
-				if (this.variables[Constants.ColorMatchingMode] === feedback.options.mode) {
+				if (ntcontrol.ColorMatching[this.variables[Constants.ColorMatchingMode]] === feedback.options.mode) {
 					return {
 						color: feedback.options.fg,
 						bgcolor: feedback.options.bg
@@ -979,45 +868,14 @@ class instance extends instance_skel {
 			label: 'Change background color by current color values for 3 color matching mode',
 			description: 'If the current color values for 3 color matching mode matches the specified value, change background color of the bank',
 			options: [
-				{
-					type: 'colorpicker',
-					label: 'Foreground color',
-					id: 'fg',
-					default: this.rgb(0,0,0)
-				},
-				{
-					type: 'colorpicker',
-					label: 'Background color',
-					id: 'bg',
-					default: this.rgb(255,255,0)
-				},
-				{
-					type: 'textinput',
-					label: 'Red (R,G,B)',
-					id: Constants.Red,
-					tooltip: 'Red',
-					default: DEFAULT_COLOR_RED,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'Green (R,G,B)',
-					id: Constants.Green,
-					tooltip: 'Green',
-					default: DEFAULT_COLOR_GREEN,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'Blue (R,G,B)',
-					id: Constants.Blue,
-					tooltip: 'Blue',
-					default: DEFAULT_COLOR_BLUE,
-					regex: RGB_REGEX_STRING
-				}
+				foregroundPicker(this.rgb(0,0,0)),
+				backgroundPicker(this.rgb(255,255,0)),
+				rgbTextInput(Constants.Red, 'Red', DEFAULT_COLOR_RED),
+				rgbTextInput(Constants.Green, 'Green', DEFAULT_COLOR_GREEN),
+				rgbTextInput(Constants.Blue, 'Blue', DEFAULT_COLOR_BLUE)
 			],
 			callback: (feedback) => {
-				if (this.variables[Constants.ColorMatchingMode] === ntcontrol.ColorMatching['3COLORS']
+				if (ntcontrol.ColorMatching[this.variables[Constants.ColorMatchingMode]] === ntcontrol.ColorMatching['3COLORS']
 					&& this.variables[Constants.ColorMatching3Color + '_' + Constants.Red] === feedback.options[Constants.Red]
 					&& this.variables[Constants.ColorMatching3Color + '_' + Constants.Green] === feedback.options[Constants.Green]
 					&& this.variables[Constants.ColorMatching3Color + '_' + Constants.Blue] === feedback.options[Constants.Blue]) {
@@ -1033,77 +891,18 @@ class instance extends instance_skel {
 			label: 'Change background color by current color values for 7 color matching mode',
 			description: 'If the current color values for 7 color matching mode matches the specified value, change background color of the bank',
 			options: [
-				{
-					type: 'colorpicker',
-					label: 'Foreground color',
-					id: 'fg',
-					default: this.rgb(0,0,0)
-				},
-				{
-					type: 'colorpicker',
-					label: 'Background color',
-					id: 'bg',
-					default: this.rgb(255,255,0)
-				},
-				{
-					type: 'textinput',
-					label: 'Red (R,G,B)',
-					id: Constants.Red,
-					tooltip: 'Red',
-					default: DEFAULT_COLOR_RED,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'Green (R,G,B)',
-					id: Constants.Green,
-					tooltip: 'Green',
-					default: DEFAULT_COLOR_GREEN,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'Blue (R,G,B)',
-					id: Constants.Blue,
-					tooltip: 'Blue',
-					default: DEFAULT_COLOR_BLUE,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'Cyan (R,G,B)',
-					id: Constants.Cyan,
-					tooltip: 'Cyan',
-					default: DEFAULT_COLOR_CYAN,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'Magenta (R,G,B)',
-					id: Constants.Magenta,
-					tooltip: 'Magenta',
-					default: DEFAULT_COLOR_MAGNETA,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'Yellow (R,G,B)',
-					id: Constants.Yellow,
-					tooltip: 'Yellow',
-					default: DEFAULT_COLOR_YELLOW,
-					regex: RGB_REGEX_STRING
-				},
-				{
-					type: 'textinput',
-					label: 'White (R,G,B)',
-					id: Constants.White,
-					tooltip: 'White',
-					default: DEFAULT_COLOR_WHITE,
-					regex: RGB_REGEX_STRING
-				}
+				foregroundPicker(this.rgb(0,0,0)),
+				backgroundPicker(this.rgb(255,255,0)),
+				rgbTextInput(Constants.Red, 'Red', DEFAULT_COLOR_RED),
+				rgbTextInput(Constants.Green, 'Green', DEFAULT_COLOR_GREEN),
+				rgbTextInput(Constants.Blue, 'Blue', DEFAULT_COLOR_BLUE),
+				rgbTextInput(Constants.Cyan, 'Cyan', DEFAULT_COLOR_CYAN),
+				rgbTextInput(Constants.Magenta, 'Magenta', DEFAULT_COLOR_MAGNETA),
+				rgbTextInput(Constants.Yellow, 'Yellow', DEFAULT_COLOR_YELLOW),
+				rgbTextInput(Constants.White, 'White', DEFAULT_COLOR_WHITE)
 			],
 			callback: (feedback) => {
-				if (this.variables[Constants.ColorMatchingMode] === ntcontrol.ColorMatching['7COLORS']
+				if (ntcontrol.ColorMatching[this.variables[Constants.ColorMatchingMode]] === ntcontrol.ColorMatching['7COLORS']
 					&& this.variables[Constants.ColorMatching7Color + '_' + Constants.Red] === feedback.options[Constants.Red]
 					&& this.variables[Constants.ColorMatching7Color + '_' + Constants.Green] === feedback.options[Constants.Green]
 					&& this.variables[Constants.ColorMatching7Color + '_' + Constants.Blue] === feedback.options[Constants.Blue]
@@ -1123,18 +922,8 @@ class instance extends instance_skel {
 			label: 'Change background color by current brightness',
 			description: 'If the current brightness of the projector matches the specified value, change background color of the bank',
 			options: [
-				{
-					type: 'colorpicker',
-					label: 'Foreground color',
-					id: 'fg',
-					default: this.rgb(0,0,0)
-				},
-				{
-					type: 'colorpicker',
-					label: 'Background color',
-					id: 'bg',
-					default: this.rgb(255,255,0)
-				},
+				foregroundPicker(this.rgb(0,0,0)),
+				backgroundPicker(this.rgb(255,255,0)),
 				{
 					type: 'number',
 					label: 'Brightness',
@@ -1405,14 +1194,44 @@ class instance extends instance_skel {
 			]
 		});
 
+		presets.push({
+			category: 'Commands',
+			label: 'Brightness',
+			bank: {
+				style: 'text',
+				text: 'Brightness\\n100',
+				size: '14',
+				color: this.rgb(255,255,255),
+				bgcolor: this.rgb(0,0,0)
+			},
+			feedbacks: [
+				{
+					type: Constants.Brightness,
+					options: {
+						bg: this.rgb(255,255,0),
+						fg: this.rgb(255,255,255),
+						value: 100
+					}
+				}
+			],
+			actions: [
+				{
+					action: Constants.Brightness,
+					options: {
+						value: 100
+					}
+				}
+			]
+		});
+
 		for (let input of this.choiceInputs) {
 			presets.push({
 				category: 'Input source',
 				label: 'Selection of input ' + input.label,
 				bank: {
 					style: 'text',
-					text: 'Input ' + input.label,
-					size: '18',
+					text: 'Input\\n' + (input.label || '').replace('COMPUTER', 'COMP. '),
+					size: '14',
 					color: this.rgb(255,255,255),
 					bgcolor: this.rgb(0,0,0)
 				},
@@ -1443,8 +1262,8 @@ class instance extends instance_skel {
 				label: 'Selection of test pattern ' + pattern.label,
 				bank: {
 					style: 'text',
-					text: 'Pattern ' + pattern.label,
-					size: '18',
+					text: 'Pattern\\n' + (pattern.label || '').replace('Crosshatch', 'Cross').replace('orizontal', 'orz.'),
+					size: '14',
 					color: this.rgb(255,255,255),
 					bgcolor: this.rgb(0,0,0)
 				},
@@ -1468,6 +1287,125 @@ class instance extends instance_skel {
 				]
 			});
 		}
+
+		presets.push({
+			category: 'Color matching',
+			label: 'Color matching OFF',
+			bank: {
+				style: 'text',
+				text: 'Color matching OFF',
+				size: '14',
+				color: this.rgb(255,255,255),
+				bgcolor: this.rgb(0,0,0)
+			},
+			feedbacks: [
+				{
+					type: Constants.ColorMatchingMode,
+					options: {
+						bg: this.rgb(255,255,0),
+						fg: this.rgb(0,0,0),
+						state: ntcontrol.ColorMatching.OFF
+					}
+				}
+			],
+			actions: [
+				{
+					action: Constants.ColorMatchingMode,
+					options: {
+						mode: ntcontrol.ColorMatching.OFF
+					}
+				}
+			]
+		});
+
+		presets.push({
+			category: 'Color matching',
+			label: 'Color matching 3-colors',
+			bank: {
+				style: 'text',
+				text: 'Color matching 3-colors',
+				size: '14',
+				color: this.rgb(255,255,255),
+				bgcolor: this.rgb(0,0,0)
+			},
+			feedbacks: [
+				{
+					type: Constants.ColorMatching3Color,
+					options: {
+						bg: this.rgb(255,255,0),
+						fg: this.rgb(0,0,0),
+						[Constants.Red]: DEFAULT_COLOR_RED,
+						[Constants.Green]: DEFAULT_COLOR_GREEN,
+						[Constants.Blue]: DEFAULT_COLOR_BLUE
+					}
+				}
+			],
+			actions: [
+				{
+					action: Constants.ColorMatchingMode,
+					options: {
+						mode: ntcontrol.ColorMatching["3COLORS"]
+					}
+				},
+				{
+					action: Constants.ColorMatching3Color,
+					options: {
+						[Constants.Red]: DEFAULT_COLOR_RED,
+						[Constants.Green]: DEFAULT_COLOR_GREEN,
+						[Constants.Blue]: DEFAULT_COLOR_BLUE
+					}
+				}
+			]
+		});
+
+		presets.push({
+			category: 'Color matching',
+			label: 'Color matching 7-colors',
+			bank: {
+				style: 'text',
+				text: 'Color matching 7-colors',
+				size: '14',
+				color: this.rgb(255,255,255),
+				bgcolor: this.rgb(0,0,0)
+			},
+			feedbacks: [
+				{
+					type: Constants.ColorMatching7Color,
+					options: {
+						bg: this.rgb(255,255,0),
+						fg: this.rgb(0,0,0),
+						[Constants.Red]: DEFAULT_COLOR_RED,
+						[Constants.Green]: DEFAULT_COLOR_GREEN,
+						[Constants.Blue]: DEFAULT_COLOR_BLUE,
+						[Constants.Cyan]: DEFAULT_COLOR_CYAN,
+						[Constants.Magenta]: DEFAULT_COLOR_MAGNETA,
+						[Constants.Yellow]: DEFAULT_COLOR_YELLOW,
+						[Constants.White]: DEFAULT_COLOR_WHITE
+					}
+				}
+			],
+			actions: [
+				{
+					action: Constants.ColorMatchingMode,
+					options: {
+						mode: ntcontrol.ColorMatching["7COLORS"]
+					}
+				},
+				{
+					action: Constants.ColorMatching7Color,
+					options: {
+						[Constants.Red]: DEFAULT_COLOR_RED,
+						[Constants.Green]: DEFAULT_COLOR_GREEN,
+						[Constants.Blue]: DEFAULT_COLOR_BLUE,
+						[Constants.Cyan]: DEFAULT_COLOR_CYAN,
+						[Constants.Magenta]: DEFAULT_COLOR_MAGNETA,
+						[Constants.Yellow]: DEFAULT_COLOR_YELLOW,
+						[Constants.White]: DEFAULT_COLOR_WHITE
+					}
+				}
+			]
+		});
+
 
 		this.setPresetDefinitions(presets);
 	}
