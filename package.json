@@ -24,7 +24,7 @@
 	},
 	"homepage": "https://github.com/bitfocus/companion-module-panasonic-projector#readme",
 	"dependencies": {
-		"ntcontrol-connection": "github:peschuster/ntcontrol-connection"
+		"ntcontrol-connection": "^0.1.0"
 	},
 	"devDependencies": {
 		"eslint": "^6.5.1",
