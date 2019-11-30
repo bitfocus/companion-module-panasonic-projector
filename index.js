@@ -24,7 +24,8 @@ const Constants = {
 	ColorMatching3Color: 'color_matching_3c',
 	ColorMatching7Color: 'color_matching_7c',
 	TestPattern: 'test_pattern',
-	GridDisplay: 'grid_display',
+	// TODO: Should work, but needs testing with a projector with activated upgrade kit
+	//GridDisplay: 'grid_display',
 	Brightness: 'brightness',
 	LampStatus: 'lamp_state',
 	On: 'on',
@@ -261,6 +262,8 @@ class instance extends instance_skel {
 			]
 		};
 
+		// TODO: Should work, but needs testing with a projector with activated upgrade kit
+		/*
 		actions[Constants.GridDisplay] = {
 			label: 'Change grid settings',
 			options: [
@@ -291,6 +294,7 @@ class instance extends instance_skel {
 				}
 			]
 		};
+		*/
 
 		actions[Constants.Brightness] = {
 			label: 'Change brightness control gain',
@@ -612,9 +616,10 @@ class instance extends instance_skel {
 					this.sendValue(ntcontrol.ColorMatching7ColorsYellowCommand, ntcontrol.DefaultRgbConverter.parse(opt[Constants.Yellow]));
 					this.sendValue(ntcontrol.ColorMatching7ColorsWhiteCommand, ntcontrol.DefaultRgbConverter.parse(opt[Constants.White]));
 					break;
-				case Constants.GridDisplay:
-					this.sendValue(ntcontrol.GridSettingsCommand, { verticalLines: opt.vertical, horizontalLines: opt.horizontal, mode: opt.mode });
-					break;
+				// TODO: Should work, but needs testing with a projector with activated upgrade kit
+				//case Constants.GridDisplay:
+				//	   this.sendValue(ntcontrol.GridSettingsCommand, { verticalLines: opt.vertical, horizontalLines: opt.horizontal, mode: opt.mode });
+				//	   break;
 				case Constants.Brightness:
 					this.sendValue(ntcontrol.BrightnessControlCommand, opt.value);
 					break;
