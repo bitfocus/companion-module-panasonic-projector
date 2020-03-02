@@ -1,1 +1,2 @@
-panasonic-dw750
+# companion-module-panasonic-projector
+See HELP.md and LICENSE
