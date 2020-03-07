@@ -2,8 +2,7 @@
 	"name": "panasonic-projector",
 	"version": "1.0.0",
 	"keywords": [
-		"Projector",
-		"PJLink"
+		"Projector"
 	],
 	"description": "Module implements the NTCONTROL protocol for panasonic projectors.",
 	"manufacturer": "Panasonic",
