@@ -463,12 +463,16 @@ class instance extends instance_skel {
 			default:
 				var matches = /^ColorMatching(\d)Colors(Red|Green|Blue|Cyan|Magenta|Yellow|White)$/.exec(field)
 				if (matches.length === 3) {
-					this.setVariable(
-						Constants.ColorMatchingMode + '_' + matches[1] + 'c_' + matches[2].toLocaleLowerCase(),
-						value.R + ',' + value.G + ',' + value.B
-					)
-					this.checkFeedbacks(Constants.ColorMatching3Color)
-					this.checkFeedbacks(Constants.ColorMatching7Color)
+					try {
+						this.setVariable(
+							Constants.ColorMatchingMode + '_' + matches[1] + 'c_' + matches[2].toLocaleLowerCase(),
+							value.R + ',' + value.G + ',' + value.B
+						)
+						this.checkFeedbacks(Constants.ColorMatching3Color)
+						this.checkFeedbacks(Constants.ColorMatching7Color)
+					} catch (e) {
+						this.debug(e)
+					}
 				}
 				break
 		}
