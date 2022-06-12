@@ -755,7 +755,7 @@ class instance extends instance_skel {
 				},
 			],
 			callback: (feedback) => {
-				if (this.variables[Constants.LampStatus] === feedback.options.state) {
+				if (this.variables[Constants.LampStatus] === ntcontrol.enumValueToLabel(ntcontrol.LampControlStatus, feedback.options.state)) {
 					return {
 						color: feedback.options.fg,
 						bgcolor: feedback.options.bg,
