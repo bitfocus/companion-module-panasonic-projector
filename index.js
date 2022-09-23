@@ -25,6 +25,8 @@ const Constants = {
 	//GridDisplay: 'grid_display',
 	Brightness: 'brightness',
 	LampStatus: 'lamp_state',
+	LensMemory: 'lens_mem',
+	LoadLensMemory: 'load_lens_mem',
 	On: 'on',
 	Off: 'off',
 	Toggle: 'toggle',
@@ -109,6 +111,7 @@ class PanasonicInstance extends InstanceBase {
 		this.choiceTestPattern = this.buildList(ntcontrol.TestPattern)
 		this.choiceGridMode = this.buildList(ntcontrol.DisplayGridLines)
 		this.choiceLampState = this.buildList(ntcontrol.LampControlStatus)
+		this.choiceLensMemory = this.buildList(ntcontrol.LensMemory)
 
 		this.choiceOnOff = [
 			{ id: Constants.On, label: Constants.On },
@@ -358,6 +361,22 @@ class PanasonicInstance extends InstanceBase {
 			callback: (action) => {
 				this.sendValue(ntcontrol.TestPatternCommand, action.options.test_pattern)
 			},
+		}
+
+		actions[Constants.LoadLensMemory] = {
+			name: 'Load lens memory',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Lens memory',
+					id: Constants.LensMemory,
+					default: ntcontrol.LensMemory['LENS MEMORY1'],
+					choices: this.choiceLensMemory,
+				},
+			],
+			callback: (action) => {
+				this.sendValue(ntcontrol.LensMemoryLoadCommand, action.options[Constants.LensMemory])
+			}
 		}
 
 		// TODO: Should work, but needs testing with a projector with activated upgrade kit
