@@ -1,6 +1,6 @@
-var instance_skel = require('../../instance_skel')
-var ntcontrol = require('ntcontrol-connection')
-var debug
+const { runEntrypoint, InstanceBase, Regex , combineRgb, InstanceStatus} = require('@companion-module/base')
+const ntcontrol = require('ntcontrol-connection')
+const UpgradeScripts = require('./upgrades')
 
 const NUMBER_0_2048_REGEX_STRING = '(\\d|[1-9]\\d|[1-9]\\d\\d|1\\d\\d\\d|20[0-3]\\d|204[0-8])'
 const RGB_REGEX_STRING =
@@ -70,7 +70,7 @@ function rgbTextInput(id, label, defaultValue) {
 		id: id,
 		tooltip: label,
 		default: defaultValue,
-		regex: RGB_REGEX_STRING,
+		regex: Regex.SOMETHING,
 	}
 }
 
@@ -83,7 +83,7 @@ function rgbTextInput(id, label, defaultValue) {
  * @author Matt Foulks <mfoulks1@gmail.com>
  * @author Keith Rocheck <keith.rocheck@gmail.com>
  */
-class instance extends instance_skel {
+class PanasonicInstance extends InstanceBase {
 	buildList(type) {
 		const result = []
 		for (let id in type) {
@@ -100,8 +100,8 @@ class instance extends instance_skel {
 	 * @param {Object} config - saved user configuration parameters
 	 * @since 1.0.0
 	 */
-	constructor(system, id, config) {
-		super(system, id, config)
+	constructor(internal) {
+		super(internal)
 
 		this.variables = {}
 		this.conenction = undefined
@@ -124,22 +124,19 @@ class instance extends instance_skel {
 			{ id: Constants.Off, label: Constants.Off },
 			{ id: Constants.Toggle, label: Constants.Toggle },
 		]
-
-		this.actions() // export actions
 	}
 
 	/**
 	 * Setup the actions.
 	 *
-	 * @param {EventEmitter} system - the brains of the operation
 	 * @access public
 	 * @since 1.0.0
 	 */
-	actions() {
-		var actions = {}
+	updateActions() {
+		const actions = {}
 
 		actions[Constants.Power] = {
-			label: 'Turn on/off Projector',
+			name: 'Turn on/off Projector',
 			options: [
 				{
 					type: 'dropdown',
@@ -149,10 +146,21 @@ class instance extends instance_skel {
 					choices: this.choiceToggle,
 				},
 			],
+			callback: (action) => {
+				if (action.options.mode == Constants.On) {
+					this.projector.setPower(true)
+				} else if (action.options.mode == Constants.Off) {
+					this.projector.setPower(false)
+				} else if (action.options.mode == Constants.Toggle) {
+					this.projector.setPower()
+				} else {
+					this.log('error', 'Invalid value for power command: ' + action.options.mode)
+				}
+			},
 		}
 
 		actions[Constants.Shutter] = {
-			label: 'Turn the Projector shutter on/off',
+			name: 'Turn the Projector shutter on/off',
 			options: [
 				{
 					type: 'dropdown',
@@ -162,10 +170,21 @@ class instance extends instance_skel {
 					choices: this.choiceToggle,
 				},
 			],
+			callback: (action) => {
+				if (action.options.mode == Constants.On) {
+					this.projector.setShutter(true)
+				} else if (action.options.mode == Constants.Off) {
+					this.projector.setShutter(false)
+				} else if (action.options.mode == Constants.Toggle) {
+					this.projector.setShutter()
+				} else {
+					this.log('error', 'Invalid value for shutter command: ' + action.options.mode)
+				}
+			},
 		}
 
 		actions[Constants.ShutterFadeIn] = {
-			label: 'Change the shutter fade-in time',
+			name: 'Change the shutter fade-in time',
 			options: [
 				{
 					type: 'dropdown',
@@ -175,10 +194,13 @@ class instance extends instance_skel {
 					choices: this.choiceShutterFadeTimes,
 				},
 			],
+			callback: (action) => {
+				this.sendValue(ntcontrol.ShutterFadeInCommand, action.options.value)
+			},
 		}
 
 		actions[Constants.ShutterFadeOut] = {
-			label: 'Change the shutter fade-out time',
+			name: 'Change the shutter fade-out time',
 			options: [
 				{
 					type: 'dropdown',
@@ -188,10 +210,13 @@ class instance extends instance_skel {
 					choices: this.choiceShutterFadeTimes,
 				},
 			],
+			callback: (action) => {
+				this.sendValue(ntcontrol.ShutterFadeOutCommand, action.options.value)
+			},
 		}
 
 		actions[Constants.Freeze] = {
-			label: 'Turn the Projector freeze on/off',
+			name: 'Turn the Projector freeze on/off',
 			options: [
 				{
 					type: 'dropdown',
@@ -201,10 +226,21 @@ class instance extends instance_skel {
 					choices: this.choiceToggle,
 				},
 			],
+			callback: (action) => {
+				if (action.options.mode == Constants.On) {
+					this.projector.setFreeze(true)
+				} else if (action.options.mode == Constants.Off) {
+					this.projector.setFreeze(false)
+				} else if (action.options.mode == Constants.Toggle) {
+					this.projector.setFreeze()
+				} else {
+					this.log('error', 'Invalid value for freeze command: ' + action.options.mode)
+				}
+			},
 		}
 
 		actions[Constants.InputSource] = {
-			label: 'Change the Input Source',
+			name: 'Change the Input Source',
 			options: [
 				{
 					type: 'dropdown',
@@ -214,10 +250,13 @@ class instance extends instance_skel {
 					choices: this.choiceInputs,
 				},
 			],
+			callback: (action) => {
+				this.projector.setInput(action.options[Constants.InputSource])
+			},
 		}
 
 		actions[Constants.ColorMatchingMode] = {
-			label: 'Change the Color Matching mode',
+			name: 'Change the Color Matching mode',
 			options: [
 				{
 					type: 'dropdown',
@@ -227,19 +266,36 @@ class instance extends instance_skel {
 					choices: this.choiceColorMatching,
 				},
 			],
+			callback: (action) => {
+				this.sendValue(ntcontrol.ColorMatchingCommand, action.options.mode)
+			},
 		}
 
 		actions[Constants.ColorMatching3Color] = {
-			label: 'Set colors in 3-Color-Mode',
+			name: 'Set colors in 3-Color-Mode',
 			options: [
 				rgbTextInput(Constants.Red, 'Red', DEFAULT_COLOR_RED),
 				rgbTextInput(Constants.Green, 'Green', DEFAULT_COLOR_GREEN),
 				rgbTextInput(Constants.Blue, 'Blue', DEFAULT_COLOR_BLUE),
 			],
+			callback: (action) => {
+				this.sendValue(
+					ntcontrol.ColorMatching3ColorsRedCommand,
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Red])
+				)
+				this.sendValue(
+					ntcontrol.ColorMatching3ColorsGreenCommand,
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Green])
+				)
+				this.sendValue(
+					ntcontrol.ColorMatching3ColorsBlueCommand,
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Blue])
+				)
+			},
 		}
 
 		actions[Constants.ColorMatching7Color] = {
-			label: 'Set colors in 7-Color-Mode',
+			name: 'Set colors in 7-Color-Mode',
 			options: [
 				rgbTextInput(Constants.Red, 'Red', DEFAULT_COLOR_RED),
 				rgbTextInput(Constants.Green, 'Green', DEFAULT_COLOR_GREEN),
@@ -249,10 +305,40 @@ class instance extends instance_skel {
 				rgbTextInput(Constants.Yellow, 'Yellow', DEFAULT_COLOR_YELLOW),
 				rgbTextInput(Constants.White, 'White', DEFAULT_COLOR_WHITE),
 			],
+			callback: (action) => {
+				this.sendValue(
+					ntcontrol.ColorMatching7ColorsRedCommand,
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Red])
+				)
+				this.sendValue(
+					ntcontrol.ColorMatching7ColorsGreenCommand,
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Green])
+				)
+				this.sendValue(
+					ntcontrol.ColorMatching7ColorsBlueCommand,
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Blue])
+				)
+				this.sendValue(
+					ntcontrol.ColorMatching7ColorsCyanCommand,
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Cyan])
+				)
+				this.sendValue(
+					ntcontrol.ColorMatching7ColorsMagentaCommand,
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Magenta])
+				)
+				this.sendValue(
+					ntcontrol.ColorMatching7ColorsYellowCommand,
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Yellow])
+				)
+				this.sendValue(
+					ntcontrol.ColorMatching7ColorsWhiteCommand,
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.White])
+				)
+			},
 		}
 
 		actions[Constants.TestPattern] = {
-			label: 'Change The Test Pattern',
+			name: 'Change The Test Pattern',
 			options: [
 				{
 					type: 'dropdown',
@@ -262,12 +348,15 @@ class instance extends instance_skel {
 					choices: this.choiceTestPattern,
 				},
 			],
+			callback: (action) => {
+				this.sendValue(ntcontrol.TestPatternCommand, action.options.test_pattern)
+			},
 		}
 
 		// TODO: Should work, but needs testing with a projector with activated upgrade kit
 		/*
 		actions[Constants.GridDisplay] = {
-			label: 'Change grid settings',
+			name: 'Change grid settings',
 			options: [
 				{
 					type: 'number',
@@ -294,12 +383,16 @@ class instance extends instance_skel {
 					default: ntcontrol.DisplayGridLines.Off,
 					choices: this.choiceGridMode
 				}
-			]
+			],
+			callback: (action)=>{
+					   this.sendValue(ntcontrol.GridSettingsCommand, { verticalLines: action.options.vertical, horizontalLines: action.options.horizontal, mode: action.options.mode });
+
+			}
 		};
 		*/
 
 		actions[Constants.Brightness] = {
-			label: 'Change brightness control gain',
+			name: 'Change brightness control gain',
 			options: [
 				{
 					type: 'number',
@@ -312,9 +405,12 @@ class instance extends instance_skel {
 					range: true,
 				},
 			],
+			callback: (action) => {
+				this.sendValue(ntcontrol.BrightnessControlCommand, action.options.value)
+			},
 		}
 
-		this.setActions(actions)
+		this.setActionDefinitions(actions)
 	}
 
 	/**
@@ -324,7 +420,7 @@ class instance extends instance_skel {
 	 * @access public
 	 * @since 1.0.0
 	 */
-	config_fields() {
+	getConfigFields() {
 		return [
 			{
 				type: 'text',
@@ -337,16 +433,16 @@ class instance extends instance_skel {
 				type: 'textinput',
 				id: 'host',
 				label: 'Projector IP',
-				width: 10,
-				regex: this.REGEX_IP,
+				width: 8,
+				regex: Regex.IP,
 			},
 			{
 				type: 'textinput',
 				id: 'port',
 				label: 'Control Port',
-				width: 2,
+				width: 4,
 				default: '1024',
-				regex: this.REGEX_PORT,
+				regex: Regex.PORT,
 			},
 			{
 				type: 'textinput',
@@ -371,7 +467,7 @@ class instance extends instance_skel {
 	 * @access public
 	 * @since 1.0.0
 	 */
-	destroy() {
+	async destroy() {
 		if (this.connection !== undefined) {
 			this.connection.removeAllListeners()
 			this.connection.destroy()
@@ -383,7 +479,7 @@ class instance extends instance_skel {
 			delete this.projector
 		}
 
-		debug('destroy', this.id)
+		this.log('debug', 'destroy' + this.id)
 	}
 
 	/**
@@ -393,8 +489,8 @@ class instance extends instance_skel {
 	 * @access public
 	 * @since 1.0.0
 	 */
-	init() {
-		debug = this.debug
+	async init(config) {
+		this.config = config
 
 		this.initVariables()
 		this.initFeedbacks()
@@ -405,71 +501,69 @@ class instance extends instance_skel {
 			this.connection.destroy()
 			delete this.connection
 		}
-
-		this.status(this.STATUS_UNKNOWN, 'Connecting...')
+		this.updateStatus(InstanceStatus.UnknownError,'Connecting...')
 		this.connection = this.createConnection(this.config)
 		this.connection.setAuthentication(this.config.user, this.config.pass)
 
 		this.projector = this.createProjector(this.connection)
+
+		this.updateActions() // export actions
 
 		// start connection
 		this.connection.connect()
 	}
 
 	stateChangeHandler(field, value) {
-		this.debug('Received change: ' + field + ' -> ' + value)
+		this.log('debug', 'Received change: ' + field + ' -> ' + value)
 		switch (field) {
 			case 'model':
-				this.setVariable('model', value)
+				this.setVariableValues('model', value)
 				break
 			case 'name':
-				this.setVariable('name', value)
+				this.setVariableValues('name', value)
 				break
 			case 'Power':
-				this.setVariable(Constants.Power, value)
+				this.setVariableValues(Constants.Power, value)
 				this.checkFeedbacks(Constants.Power)
 				break
 			case 'Freeze':
-				this.setVariable(Constants.Freeze, value)
+				this.setVariableValues(Constants.Freeze, value)
 				this.checkFeedbacks(Constants.Freeze)
 				break
 			case 'Shutter':
-				this.setVariable(Constants.Shutter, value)
+				this.setVariableValues(Constants.Shutter, value)
 				this.checkFeedbacks(Constants.Shutter)
 				break
 			case 'InputSelect':
-				this.setVariable(Constants.InputSource, value)
+				this.setVariableValues(Constants.InputSource, value)
 				this.checkFeedbacks(Constants.InputSource)
 				break
 			case 'LampControlStatus':
-				this.setVariable(Constants.LampStatus, ntcontrol.enumValueToLabel(ntcontrol.LampControlStatus, value))
+				this.setVariableValues(Constants.LampStatus, ntcontrol.enumValueToLabel(ntcontrol.LampControlStatus, value))
 				this.checkFeedbacks(Constants.LampStatus)
 				break
 			case 'BrightnessControl':
-				this.setVariable(Constants.Brightness, value)
+				this.setVariableValues(Constants.Brightness, value)
 				this.checkFeedbacks(Constants.Brightness)
 				break
 			case 'TestPattern':
-				this.setVariable(Constants.TestPattern, ntcontrol.enumValueToLabel(ntcontrol.TestPattern, value))
+				this.setVariableValues(Constants.TestPattern, ntcontrol.enumValueToLabel(ntcontrol.TestPattern, value))
 				this.checkFeedbacks(Constants.TestPattern)
 				break
 			case 'ColorMatching':
-				this.setVariable(Constants.ColorMatchingMode, ntcontrol.enumValueToLabel(ntcontrol.ColorMatching, value))
+				this.setVariableValues(Constants.ColorMatchingMode, ntcontrol.enumValueToLabel(ntcontrol.ColorMatching, value))
 				this.handleColorMatchingChanged(value)
-				this.checkFeedbacks(Constants.ColorMatchingMode)
-				this.checkFeedbacks(Constants.ColorMatching3Color)
-				this.checkFeedbacks(Constants.ColorMatching7Color)
+				this.checkFeedbacks(Constants.ColorMatchingMode, Constants.ColorMatching3Color, Constants.ColorMatching7Color)
 				break
 			default:
 				var matches = /^ColorMatching(\d)Colors(Red|Green|Blue|Cyan|Magenta|Yellow|White)$/.exec(field)
 				if (matches.length === 3) {
 					try {
-						this.setVariable(
+						this.setVariableValues(
 							Constants.ColorMatchingMode + '_' + matches[1] + 'c_' + matches[2].toLocaleLowerCase(),
 							value.R + ',' + value.G + ',' + value.B
 						)
-						this.checkFeedbacks(Constants.ColorMatching3Color)
-						this.checkFeedbacks(Constants.ColorMatching7Color)
+						this.checkFeedbacks(Constants.ColorMatching3Color, Constants.ColorMatching7Color)
 					} catch (e) {
 						this.debug(e)
 					}
@@ -536,6 +630,11 @@ class instance extends instance_skel {
 		}
 	}
 
+	/**
+	 * Send the value to the Projector
+	 * @param {string} cmd
+	 * @param {string} value
+	 */
 	sendValue(cmd, value) {
 		if (this.projector !== undefined) {
 			try {
@@ -547,137 +646,23 @@ class instance extends instance_skel {
 	}
 
 	/**
-	 * Executes the provided action.
-	 *
-	 * @param {Object} action - the action to be executed
-	 * @access public
-	 * @since 1.0.0
+	 * Setup a connection
+	 * @param {config} config
+	 * @returns
 	 */
-	action(action) {
-		if (this.projector === undefined) {
-			return
-		}
-
-		var opt = action.options
-
-		try {
-			switch (action.action) {
-				case Constants.Power:
-					if (opt.mode == Constants.On) {
-						this.projector.setPower(true)
-					} else if (opt.mode == Constants.Off) {
-						this.projector.setPower(false)
-					} else if (opt.mode == Constants.Toggle) {
-						this.projector.setPower()
-					} else {
-						this.log('error', 'Invalid value for power command: ' + opt.mode)
-					}
-					break
-				case Constants.Shutter:
-					if (opt.mode == Constants.On) {
-						this.projector.setShutter(true)
-					} else if (opt.mode == Constants.Off) {
-						this.projector.setShutter(false)
-					} else if (opt.mode == Constants.Toggle) {
-						this.projector.setShutter()
-					} else {
-						this.log('error', 'Invalid value for shutter command: ' + opt.mode)
-					}
-					break
-				case Constants.ShutterFadeIn:
-					this.sendValue(ntcontrol.ShutterFadeInCommand, opt.value)
-					break
-				case Constants.ShutterFadeOut:
-					this.sendValue(ntcontrol.ShutterFadeOutCommand, opt.value)
-					break
-				case Constants.Freeze:
-					if (opt.mode == Constants.On) {
-						this.projector.setFreeze(true)
-					} else if (opt.mode == Constants.Off) {
-						this.projector.setFreeze(false)
-					} else if (opt.mode == Constants.Toggle) {
-						this.projector.setFreeze()
-					} else {
-						this.log('error', 'Invalid value for freeze command: ' + opt.mode)
-					}
-					break
-				case Constants.InputSource:
-					this.projector.setInput(opt[Constants.InputSource])
-					break
-				case Constants.TestPattern:
-					this.sendValue(ntcontrol.TestPatternCommand, opt.test_pattern)
-					break
-				case Constants.ColorMatchingMode:
-					this.sendValue(ntcontrol.ColorMatchingCommand, opt.mode)
-					break
-				case Constants.ColorMatching3Color:
-					this.sendValue(
-						ntcontrol.ColorMatching3ColorsRedCommand,
-						ntcontrol.DefaultRgbConverter.parse(opt[Constants.Red])
-					)
-					this.sendValue(
-						ntcontrol.ColorMatching3ColorsGreenCommand,
-						ntcontrol.DefaultRgbConverter.parse(opt[Constants.Green])
-					)
-					this.sendValue(
-						ntcontrol.ColorMatching3ColorsBlueCommand,
-						ntcontrol.DefaultRgbConverter.parse(opt[Constants.Blue])
-					)
-					break
-				case Constants.ColorMatching7Color:
-					this.sendValue(
-						ntcontrol.ColorMatching7ColorsRedCommand,
-						ntcontrol.DefaultRgbConverter.parse(opt[Constants.Red])
-					)
-					this.sendValue(
-						ntcontrol.ColorMatching7ColorsGreenCommand,
-						ntcontrol.DefaultRgbConverter.parse(opt[Constants.Green])
-					)
-					this.sendValue(
-						ntcontrol.ColorMatching7ColorsBlueCommand,
-						ntcontrol.DefaultRgbConverter.parse(opt[Constants.Blue])
-					)
-					this.sendValue(
-						ntcontrol.ColorMatching7ColorsCyanCommand,
-						ntcontrol.DefaultRgbConverter.parse(opt[Constants.Cyan])
-					)
-					this.sendValue(
-						ntcontrol.ColorMatching7ColorsMagentaCommand,
-						ntcontrol.DefaultRgbConverter.parse(opt[Constants.Magenta])
-					)
-					this.sendValue(
-						ntcontrol.ColorMatching7ColorsYellowCommand,
-						ntcontrol.DefaultRgbConverter.parse(opt[Constants.Yellow])
-					)
-					this.sendValue(
-						ntcontrol.ColorMatching7ColorsWhiteCommand,
-						ntcontrol.DefaultRgbConverter.parse(opt[Constants.White])
-					)
-					break
-				// TODO: Should work, but needs testing with a projector with activated upgrade kit
-				//case Constants.GridDisplay:
-				//	   this.sendValue(ntcontrol.GridSettingsCommand, { verticalLines: opt.vertical, horizontalLines: opt.horizontal, mode: opt.mode });
-				//	   break;
-				case Constants.Brightness:
-					this.sendValue(ntcontrol.BrightnessControlCommand, opt.value)
-					break
-				default:
-					this.debug('Unhandeled action: ' + action.action)
-					break
-			}
-		} catch (e) {
-			this.log('error', e.message ? e.message : e)
-		}
-	}
-
 	createConnection(config) {
 		const obj = new ntcontrol.Client(config.host, config.port)
 		obj.on(ntcontrol.Client.Events.DEBUG, (d) => this.log('debug', d))
-		obj.on(ntcontrol.Client.Events.CONNECT, () => this.status(this.STATUS_OK, 'Connected'))
-		obj.on(ntcontrol.Client.Events.DISCONNECT, () => this.status(this.STATUS_ERROR, 'Disconnected'))
+		obj.on(ntcontrol.Client.Events.CONNECT, () => this.updateStatus(InstanceStatus.Ok, 'Connected'))
+		obj.on(ntcontrol.Client.Events.DISCONNECT, () => this.updateStatus(InstanceStatus.Disconnected, 'Disconnected'))
 		return obj
 	}
 
+	/**
+	 * Create the projector object
+	 * @param {connection} connection
+	 * @returns
+	 */
 	createProjector(connection) {
 		const obj = new ntcontrol.Projector(connection, this.log)
 		obj.on(ntcontrol.Projector.Events.STATE_CHANGE, this.stateChangeHandler.bind(this))
@@ -694,7 +679,7 @@ class instance extends instance_skel {
 	 * @access public
 	 * @since 1.0.0
 	 */
-	updateConfig(config) {
+	async configUpdated(config) {
 		const resetConnection =
 			config.host !== this.config.host || config.port !== this.config.port || this.connection === undefined
 		let updateAuthentication = config.user !== this.config.user || config.pass !== this.config.pass
@@ -737,15 +722,16 @@ class instance extends instance_skel {
 	 */
 	initFeedbacks() {
 		// feedbacks
-		var feedbacks = {}
+		const feedbacks = {}
 
 		feedbacks[Constants.LampStatus] = {
-			label: 'Change background color by lamp status',
+			type: 'advanced',
+			name: 'Change background color by lamp status',
 			description:
 				'If the state of the projector lamps matches the specified value, change background color of the bank',
 			options: [
-				foregroundPicker(this.rgb(0, 0, 0)),
-				backgroundPicker(this.rgb(0, 255, 0)),
+				foregroundPicker(combineRgb(0, 0, 0)),
+				backgroundPicker(combineRgb(0, 255, 0)),
 				{
 					type: 'dropdown',
 					label: 'Lamp state',
@@ -755,7 +741,10 @@ class instance extends instance_skel {
 				},
 			],
 			callback: (feedback) => {
-				if (this.variables[Constants.LampStatus] === ntcontrol.enumValueToLabel(ntcontrol.LampControlStatus, feedback.options.state)) {
+				if (
+					this.variables[Constants.LampStatus] ===
+					ntcontrol.enumValueToLabel(ntcontrol.LampControlStatus, feedback.options.state)
+				) {
 					return {
 						color: feedback.options.fg,
 						bgcolor: feedback.options.bg,
@@ -765,12 +754,13 @@ class instance extends instance_skel {
 		}
 
 		feedbacks[Constants.Power] = {
-			label: 'Change background color by power status',
+			type: 'advanced',
+			name: 'Change background color by power status',
 			description:
 				'If the state of the projector (power) matches the specified value, change background color of the bank',
 			options: [
-				foregroundPicker(this.rgb(0, 0, 0)),
-				backgroundPicker(this.rgb(255, 0, 0)),
+				foregroundPicker(combineRgb(0, 0, 0)),
+				backgroundPicker(combineRgb(255, 0, 0)),
 				{
 					type: 'dropdown',
 					label: 'Power state',
@@ -790,12 +780,13 @@ class instance extends instance_skel {
 		}
 
 		feedbacks[Constants.Shutter] = {
-			label: 'Change background color by shutter status',
+			type: 'advanced',
+			name: 'Change background color by shutter status',
 			description:
 				'If the state of the projector shutter matches the specified value, change background color of the bank',
 			options: [
-				foregroundPicker(this.rgb(0, 0, 0)),
-				backgroundPicker(this.rgb(255, 0, 0)),
+				foregroundPicker(combineRgb(0, 0, 0)),
+				backgroundPicker(combineRgb(255, 0, 0)),
 				{
 					type: 'dropdown',
 					label: 'Shutter state',
@@ -815,12 +806,13 @@ class instance extends instance_skel {
 		}
 
 		feedbacks[Constants.Freeze] = {
-			label: 'Change background color by freeze status',
+			type: 'advanced',
+			name: 'Change background color by freeze status',
 			description:
 				'If the state of the projector freeze matches the specified value, change background color of the bank',
 			options: [
-				foregroundPicker(this.rgb(0, 0, 0)),
-				backgroundPicker(this.rgb(255, 0, 0)),
+				foregroundPicker(combineRgb(0, 0, 0)),
+				backgroundPicker(combineRgb(255, 0, 0)),
 				{
 					type: 'dropdown',
 					label: 'Freeze state',
@@ -840,12 +832,13 @@ class instance extends instance_skel {
 		}
 
 		feedbacks[Constants.InputSource] = {
-			label: 'Change background color by input selection',
+			type: 'advanced',
+			name: 'Change background color by input selection',
 			description:
 				'If the selected input of the projector matches the specified value, change background color of the bank',
 			options: [
-				foregroundPicker(this.rgb(0, 0, 0)),
-				backgroundPicker(this.rgb(255, 255, 0)),
+				foregroundPicker(combineRgb(0, 0, 0)),
+				backgroundPicker(combineRgb(255, 255, 0)),
 				{
 					type: 'dropdown',
 					label: 'Input',
@@ -865,12 +858,13 @@ class instance extends instance_skel {
 		}
 
 		feedbacks[Constants.TestPattern] = {
-			label: 'Change background color by current test pattern',
+			type: 'advanced',
+			name: 'Change background color by current test pattern',
 			description:
 				'If the current test pattern of the projector matches the specified value, change background color of the bank',
 			options: [
-				foregroundPicker(this.rgb(0, 0, 0)),
-				backgroundPicker(this.rgb(255, 255, 0)),
+				foregroundPicker(combineRgb(0, 0, 0)),
+				backgroundPicker(combineRgb(255, 255, 0)),
 				{
 					type: 'dropdown',
 					label: 'Test pattern',
@@ -890,12 +884,13 @@ class instance extends instance_skel {
 		}
 
 		feedbacks[Constants.ColorMatchingMode] = {
-			label: 'Change background color by current color matching mode',
+			type: 'advanced',
+			name: 'Change background color by current color matching mode',
 			description:
 				'If the current color matching mode matches the specified value, change background color of the bank',
 			options: [
-				foregroundPicker(this.rgb(0, 0, 0)),
-				backgroundPicker(this.rgb(255, 255, 0)),
+				foregroundPicker(combineRgb(0, 0, 0)),
+				backgroundPicker(combineRgb(255, 255, 0)),
 				{
 					type: 'dropdown',
 					label: 'Color matching mode',
@@ -915,12 +910,13 @@ class instance extends instance_skel {
 		}
 
 		feedbacks[Constants.ColorMatching3Color] = {
-			label: 'Change background color by current color values for 3 color matching mode',
+			type: 'advanced',
+			name: 'Change background color by current color values for 3 color matching mode',
 			description:
 				'If the current color values for 3 color matching mode matches the specified value, change background color of the bank',
 			options: [
-				foregroundPicker(this.rgb(0, 0, 0)),
-				backgroundPicker(this.rgb(255, 255, 0)),
+				foregroundPicker(combineRgb(0, 0, 0)),
+				backgroundPicker(combineRgb(255, 255, 0)),
 				rgbTextInput(Constants.Red, 'Red', DEFAULT_COLOR_RED),
 				rgbTextInput(Constants.Green, 'Green', DEFAULT_COLOR_GREEN),
 				rgbTextInput(Constants.Blue, 'Blue', DEFAULT_COLOR_BLUE),
@@ -941,12 +937,13 @@ class instance extends instance_skel {
 		}
 
 		feedbacks[Constants.ColorMatching7Color] = {
-			label: 'Change background color by current color values for 7 color matching mode',
+			type: 'advanced',
+			name: 'Change background color by current color values for 7 color matching mode',
 			description:
 				'If the current color values for 7 color matching mode matches the specified value, change background color of the bank',
 			options: [
-				foregroundPicker(this.rgb(0, 0, 0)),
-				backgroundPicker(this.rgb(255, 255, 0)),
+				foregroundPicker(combineRgb(0, 0, 0)),
+				backgroundPicker(combineRgb(255, 255, 0)),
 				rgbTextInput(Constants.Red, 'Red', DEFAULT_COLOR_RED),
 				rgbTextInput(Constants.Green, 'Green', DEFAULT_COLOR_GREEN),
 				rgbTextInput(Constants.Blue, 'Blue', DEFAULT_COLOR_BLUE),
@@ -977,12 +974,13 @@ class instance extends instance_skel {
 		}
 
 		feedbacks[Constants.Brightness] = {
-			label: 'Change background color by current brightness',
+			type: 'advanced',
+			name: 'Change background color by current brightness',
 			description:
 				'If the current brightness of the projector matches the specified value, change background color of the bank',
 			options: [
-				foregroundPicker(this.rgb(0, 0, 0)),
-				backgroundPicker(this.rgb(255, 255, 0)),
+				foregroundPicker(combineRgb(0, 0, 0)),
+				backgroundPicker(combineRgb(255, 255, 0)),
 				{
 					type: 'number',
 					label: 'Brightness',
@@ -1007,26 +1005,20 @@ class instance extends instance_skel {
 		this.setFeedbackDefinitions(feedbacks)
 	}
 
-	setVariable(name, value) {
-		// var changed = this.variables[name] !== value;
-		this.variables[name] = value
-		super.setVariable(name, value)
-	}
-
 	setDefaultValues3Color() {
-		this.setVariable(Constants.ColorMatching3Color + '_' + Constants.Red, DEFAULT_COLOR_RED)
-		this.setVariable(Constants.ColorMatching3Color + '_' + Constants.Green, DEFAULT_COLOR_GREEN)
-		this.setVariable(Constants.ColorMatching3Color + '_' + Constants.Blue, DEFAULT_COLOR_BLUE)
+		this.setVariableValues(Constants.ColorMatching3Color + '_' + Constants.Red, DEFAULT_COLOR_RED)
+		this.setVariableValues(Constants.ColorMatching3Color + '_' + Constants.Green, DEFAULT_COLOR_GREEN)
+		this.setVariableValues(Constants.ColorMatching3Color + '_' + Constants.Blue, DEFAULT_COLOR_BLUE)
 	}
 
 	setDefaultValues7Color() {
-		this.setVariable(Constants.ColorMatching7Color + '_' + Constants.Red, DEFAULT_COLOR_RED)
-		this.setVariable(Constants.ColorMatching7Color + '_' + Constants.Green, DEFAULT_COLOR_GREEN)
-		this.setVariable(Constants.ColorMatching7Color + '_' + Constants.Blue, DEFAULT_COLOR_BLUE)
-		this.setVariable(Constants.ColorMatching7Color + '_' + Constants.Cyan, DEFAULT_COLOR_CYAN)
-		this.setVariable(Constants.ColorMatching7Color + '_' + Constants.Magenta, DEFAULT_COLOR_MAGNETA)
-		this.setVariable(Constants.ColorMatching7Color + '_' + Constants.Yellow, DEFAULT_COLOR_YELLOW)
-		this.setVariable(Constants.ColorMatching7Color + '_' + Constants.White, DEFAULT_COLOR_WHITE)
+		this.setVariableValues(Constants.ColorMatching7Color + '_' + Constants.Red, DEFAULT_COLOR_RED)
+		this.setVariableValues(Constants.ColorMatching7Color + '_' + Constants.Green, DEFAULT_COLOR_GREEN)
+		this.setVariableValues(Constants.ColorMatching7Color + '_' + Constants.Blue, DEFAULT_COLOR_BLUE)
+		this.setVariableValues(Constants.ColorMatching7Color + '_' + Constants.Cyan, DEFAULT_COLOR_CYAN)
+		this.setVariableValues(Constants.ColorMatching7Color + '_' + Constants.Magenta, DEFAULT_COLOR_MAGNETA)
+		this.setVariableValues(Constants.ColorMatching7Color + '_' + Constants.Yellow, DEFAULT_COLOR_YELLOW)
+		this.setVariableValues(Constants.ColorMatching7Color + '_' + Constants.White, DEFAULT_COLOR_WHITE)
 	}
 
 	/**
@@ -1036,122 +1028,124 @@ class instance extends instance_skel {
 	 * @since 1.0.0
 	 */
 	initVariables() {
-		var variables = []
+		const variables = []
 
 		variables.push({
-			label: 'Name',
-			name: 'name',
-		})
-		this.setVariable('name', '')
-
-		variables.push({
-			label: 'Model',
-			name: 'model',
-		})
-		this.setVariable('model', '')
-
-		variables.push({
-			label: 'Power state',
-			name: Constants.Power,
-		})
-		this.setVariable(Constants.Power, undefined)
-
-		variables.push({
-			label: 'Shutter state',
-			name: Constants.Shutter,
-		})
-		this.setVariable(Constants.Shutter, undefined)
-
-		variables.push({
-			label: 'Freeze state',
-			name: Constants.Freeze,
-		})
-		this.setVariable(Constants.Freeze, undefined)
-
-		variables.push({
-			label: 'Input',
-			name: Constants.InputSource,
-		})
-		this.setVariable(Constants.InputSource, '')
-
-		variables.push({
-			label: 'Lamp state',
-			name: Constants.LampStatus,
-		})
-		this.setVariable(Constants.LampStatus, undefined)
-
-		variables.push({
-			label: 'Brightness',
-			name: Constants.Brightness,
-		})
-		this.setVariable(Constants.Brightness, 100)
-
-		variables.push({
-			label: 'Test Pattern',
-			name: Constants.TestPattern,
-		})
-		this.setVariable(Constants.TestPattern, ntcontrol.TestPattern.Off)
-
-		variables.push({
-			label: 'Color Matching Mode',
-			name: Constants.ColorMatchingMode,
-		})
-		this.setVariable(Constants.ColorMatchingMode, ntcontrol.ColorMatching.Off)
-
-		variables.push({
-			label: 'Color Matching 3-Colors: Red',
-			name: Constants.ColorMatching3Color + '_' + Constants.Red,
+			name: 'Name',
+			variableId: 'name',
 		})
 
 		variables.push({
-			label: 'Color Matching 3-Colors: Green',
-			name: Constants.ColorMatching3Color + '_' + Constants.Green,
+			name: 'Model',
+			variableId: 'model',
 		})
 
 		variables.push({
-			label: 'Color Matching 3-Colors: Blue',
-			name: Constants.ColorMatching3Color + '_' + Constants.Blue,
+			name: 'Power state',
+			variableId: Constants.Power,
 		})
 
 		variables.push({
-			label: 'Color Matching 7-Colors: Red',
-			name: Constants.ColorMatching7Color + '_' + Constants.Red,
+			name: 'Shutter state',
+			variableId: Constants.Shutter,
 		})
 
 		variables.push({
-			label: 'Color Matching 7-Colors: Green',
-			name: Constants.ColorMatching7Color + '_' + Constants.Green,
+			name: 'Freeze state',
+			variableId: Constants.Freeze,
 		})
 
 		variables.push({
-			label: 'Color Matching 7-Colors: Blue',
-			name: Constants.ColorMatching7Color + '_' + Constants.Blue,
+			name: 'Input',
+			variableId: Constants.InputSource,
 		})
 
 		variables.push({
-			label: 'Color Matching 7-Colors: Cyan',
-			name: Constants.ColorMatching7Color + '_' + Constants.Cyan,
+			name: 'Lamp state',
+			variableId: Constants.LampStatus,
 		})
 
 		variables.push({
-			label: 'Color Matching 7-Colors: Magenta',
-			name: Constants.ColorMatching7Color + '_' + Constants.Magenta,
+			name: 'Brightness',
+			variableId: Constants.Brightness,
 		})
 
 		variables.push({
-			label: 'Color Matching 7-Colors: Yellow',
-			name: Constants.ColorMatching7Color + '_' + Constants.Yellow,
+			name: 'Test Pattern',
+			variableId: Constants.TestPattern,
 		})
 
 		variables.push({
-			label: 'Color Matching 7-Colors: White',
-			name: Constants.ColorMatching7Color + '_' + Constants.White,
+			name: 'Color Matching Mode',
+			variableId: Constants.ColorMatchingMode,
+		})
+
+		variables.push({
+			name: 'Color Matching 3-Colors: Red',
+			variableId: Constants.ColorMatching3Color + '_' + Constants.Red,
+		})
+
+		variables.push({
+			name: 'Color Matching 3-Colors: Green',
+			variableId: Constants.ColorMatching3Color + '_' + Constants.Green,
+		})
+
+		variables.push({
+			name: 'Color Matching 3-Colors: Blue',
+			variableId: Constants.ColorMatching3Color + '_' + Constants.Blue,
+		})
+
+		variables.push({
+			name: 'Color Matching 7-Colors: Red',
+			variableId: Constants.ColorMatching7Color + '_' + Constants.Red,
+		})
+
+		variables.push({
+			name: 'Color Matching 7-Colors: Green',
+			variableId: Constants.ColorMatching7Color + '_' + Constants.Green,
+		})
+
+		variables.push({
+			name: 'Color Matching 7-Colors: Blue',
+			variableId: Constants.ColorMatching7Color + '_' + Constants.Blue,
+		})
+
+		variables.push({
+			name: 'Color Matching 7-Colors: Cyan',
+			variableId: Constants.ColorMatching7Color + '_' + Constants.Cyan,
+		})
+
+		variables.push({
+			name: 'Color Matching 7-Colors: Magenta',
+			variableId: Constants.ColorMatching7Color + '_' + Constants.Magenta,
+		})
+
+		variables.push({
+			name: 'Color Matching 7-Colors: Yellow',
+			variableId: Constants.ColorMatching7Color + '_' + Constants.Yellow,
+		})
+
+		variables.push({
+			name: 'Color Matching 7-Colors: White',
+			variableId: Constants.ColorMatching7Color + '_' + Constants.White,
 		})
 
 		this.setDefaultValues3Color()
 		this.setDefaultValues7Color()
 
 		this.setVariableDefinitions(variables)
+		this.setVariableValues({
+			[Constants.LampStatus]: undefined,
+			[Constants.ColorMatchingMode]: ntcontrol.ColorMatching.Off,
+			[Constants.TestPattern]: ntcontrol.TestPattern.Off,
+			[Constants.Freeze]: undefined,
+			[Constants.Brightness]: 100,
+			[Constants.InputSource]: '',
+			[Constants.Power]: undefined,
+			[Constants.Shutter]: undefined,
+			name: '',
+			model: '',
+		})
 	}
 
 	/**
@@ -1161,297 +1155,336 @@ class instance extends instance_skel {
 	 * @since 1.1.1
 	 */
 	initPresets() {
-		var presets = []
+		const presets = {}
 
-		presets.push({
+		presets['Power_Toggle'] = {
 			category: 'Commands',
-			label: 'Power Toggle',
-			bank: {
-				style: 'text',
+			type: 'button',
+			name: 'Power Toggle',
+			style: {
 				text: 'Power Toggle',
 				size: '18',
-				color: this.rgb(255, 255, 255),
-				bgcolor: this.rgb(0, 0, 0),
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
 			},
 			feedbacks: [
 				{
-					type: Constants.Power,
+					feedbackId: Constants.Power,
 					options: {
-						bg: this.rgb(255, 0, 0),
-						fg: this.rgb(255, 255, 255),
 						state: Constants.On,
 					},
-				},
-			],
-			actions: [
-				{
-					action: Constants.Power,
-					options: {
-						mode: Constants.Toggle,
+					style: {
+						bgcolor: combineRgb(255, 0, 0),
+						color: combineRgb(255, 255, 255),
 					},
 				},
 			],
-		})
+			steps: [
+				{
+					down: [
+						{
+							actionId: Constants.Power,
+							options: {
+								mode: Constants.Toggle,
+							},
+						},
+					],
+					up: [],
+				},
+			],
+		}
 
-		presets.push({
+		presets['Shutter_Toggle'] = {
+			type: 'button',
 			category: 'Commands',
-			label: 'Shutter Toggle',
-			bank: {
-				style: 'text',
+			name: 'Shutter Toggle',
+			style: {
 				text: 'Shutter Toggle',
 				size: '18',
-				color: this.rgb(255, 255, 255),
-				bgcolor: this.rgb(0, 0, 0),
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
 			},
 			feedbacks: [
 				{
-					type: Constants.Shutter,
+					feedbackId: Constants.Shutter,
 					options: {
-						bg: this.rgb(255, 0, 0),
-						fg: this.rgb(255, 255, 255),
 						state: Constants.On,
 					},
-				},
-			],
-			actions: [
-				{
-					action: Constants.Shutter,
-					options: {
-						mode: Constants.Toggle,
+					style: {
+						bgcolor: combineRgb(255, 0, 0),
+						color: combineRgb(255, 255, 255),
 					},
 				},
 			],
-		})
+			steps: [
+				{
+					down: [
+						{
+							actionId: Constants.Shutter,
+							options: {
+								mode: Constants.Toggle,
+							},
+						},
+					],
+					up: [],
+				},
+			],
+		}
 
-		presets.push({
+		presets['Freeze_Toggle'] = {
+			type: 'button',
 			category: 'Commands',
-			label: 'Freeze Toggle',
-			bank: {
-				style: 'text',
+			name: 'Freeze Toggle',
+			style: {
 				text: 'Freeze Toggle',
 				size: '18',
-				color: this.rgb(255, 255, 255),
-				bgcolor: this.rgb(0, 0, 0),
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
 			},
 			feedbacks: [
 				{
-					type: Constants.Freeze,
+					feedbackId: Constants.Freeze,
 					options: {
-						bg: this.rgb(255, 0, 0),
-						fg: this.rgb(255, 255, 255),
 						state: Constants.On,
 					},
-				},
-			],
-			actions: [
-				{
-					action: Constants.Freeze,
-					options: {
-						mode: Constants.Toggle,
+					style: {
+						bgcolor: combineRgb(255, 0, 0),
+						color: combineRgb(255, 255, 255),
 					},
 				},
 			],
-		})
+			steps: [
+				{
+					down: [
+						{
+							actionId: Constants.Freeze,
+							options: {
+								mode: Constants.Toggle,
+							},
+						},
+					],
+					up: [],
+				},
+			],
+		}
 
-		presets.push({
+		presets['Brightness'] = {
+			type: 'button',
 			category: 'Commands',
-			label: 'Brightness',
-			bank: {
-				style: 'text',
+			name: 'Brightness',
+			style: {
 				text: 'Brightness\\n100',
 				size: '14',
-				color: this.rgb(255, 255, 255),
-				bgcolor: this.rgb(0, 0, 0),
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
 			},
 			feedbacks: [
 				{
-					type: Constants.Brightness,
+					feedbackId: Constants.Brightness,
 					options: {
-						bg: this.rgb(255, 255, 0),
-						fg: this.rgb(255, 255, 255),
 						value: 100,
+					},
+					style: {
+						bgcolor: combineRgb(255, 255, 0),
+						color: combineRgb(255, 255, 255),
 					},
 				},
 			],
-			actions: [
+			steps: [
 				{
-					action: Constants.Brightness,
-					options: {
-						value: 100,
-					},
+					down: [
+						{
+							action: Constants.Brightness,
+							options: {
+								value: 100,
+							},
+						},
+					],
+					up: [],
 				},
 			],
-		})
+		}
 
 		for (let input of this.choiceInputs) {
-			presets.push({
+			presets[`Selection_of_input_${input.label}`] = {
+				type: 'button',
 				category: 'Input source',
-				label: 'Selection of input ' + input.label,
-				bank: {
-					style: 'text',
+				name: 'Selection of input ' + input.label,
+				style: {
 					text: 'Input\\n' + (input.label || '').replace('COMPUTER', 'COMP. '),
 					size: '14',
-					color: this.rgb(255, 255, 255),
-					bgcolor: this.rgb(0, 0, 0),
+					color: combineRgb(255, 255, 255),
+					bgcolor: combineRgb(0, 0, 0),
 				},
 				feedbacks: [
 					{
-						type: Constants.InputSource,
+						feedbackId: Constants.InputSource,
 						options: {
-							bg: this.rgb(255, 255, 0),
-							fg: this.rgb(0, 0, 0),
 							[Constants.InputSource]: input.id,
+						},
+						style: {
+							bgcolor: combineRgb(255, 255, 0),
+							color: combineRgb(0, 0, 0),
 						},
 					},
 				],
-				actions: [
+				steps: [
 					{
-						action: Constants.InputSource,
-						options: {
-							[Constants.InputSource]: input.id,
-						},
+						down: [
+							{
+								actionId: Constants.InputSource,
+								options: {
+									[Constants.InputSource]: input.id,
+								},
+							},
+						],
+						up: [],
 					},
 				],
-			})
+			}
 		}
 
 		for (let pattern of this.choiceTestPattern) {
-			presets.push({
+			presets[`Selection_of_test_pattern_${pattern.label}`] = {
+				type: 'button',
 				category: 'Test pattern',
-				label: 'Selection of test pattern ' + pattern.label,
-				bank: {
-					style: 'text',
+				name: 'Selection of test pattern ' + pattern.label,
+				style: {
 					text: 'Pattern\\n' + (pattern.label || '').replace('Crosshatch', 'Cross').replace('orizontal', 'orz.'),
 					size: '14',
-					color: this.rgb(255, 255, 255),
-					bgcolor: this.rgb(0, 0, 0),
+					color: combineRgb(255, 255, 255),
+					bgcolor: combineRgb(0, 0, 0),
 				},
 				feedbacks: [
 					{
-						type: Constants.TestPattern,
+						feedbackId: Constants.TestPattern,
 						options: {
-							bg: this.rgb(255, 255, 0),
-							fg: this.rgb(0, 0, 0),
 							[Constants.TestPattern]: pattern.id,
+						},
+						style: {
+							bgcolor: combineRgb(255, 255, 0),
+							color: combineRgb(0, 0, 0),
 						},
 					},
 				],
 				actions: [
 					{
-						action: Constants.TestPattern,
-						options: {
-							[Constants.TestPattern]: pattern.id,
-						},
+						down: [
+							{
+								actionId: Constants.TestPattern,
+								options: {
+									[Constants.TestPattern]: pattern.id,
+								},
+							},
+						],
+						up: [],
 					},
 				],
-			})
+			}
 		}
 
-		presets.push({
+		presets['Color_matching_OFF'] = {
+			type: 'button',
 			category: 'Color matching',
-			label: 'Color matching OFF',
-			bank: {
-				style: 'text',
+			name: 'Color matching OFF',
+			style: {
 				text: 'Color matching OFF',
 				size: '14',
-				color: this.rgb(255, 255, 255),
-				bgcolor: this.rgb(0, 0, 0),
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
 			},
 			feedbacks: [
 				{
-					type: Constants.ColorMatchingMode,
+					feedbackId: Constants.ColorMatchingMode,
 					options: {
-						bg: this.rgb(255, 255, 0),
-						fg: this.rgb(0, 0, 0),
 						state: ntcontrol.ColorMatching.OFF,
 					},
-				},
-			],
-			actions: [
-				{
-					action: Constants.ColorMatchingMode,
-					options: {
-						mode: ntcontrol.ColorMatching.OFF,
+					style: {
+						bgcolor: combineRgb(255, 255, 0),
+						color: combineRgb(0, 0, 0),
 					},
 				},
 			],
-		})
+			steps: [
+				{
+					down: [
+						{
+							action: Constants.ColorMatchingMode,
+							options: {
+								mode: ntcontrol.ColorMatching.OFF,
+							},
+						},
+					],
+					up: [],
+				},
+			],
+		}
 
-		presets.push({
+		presets['Color_matching_3-colors'] = {
+			type: 'button',
 			category: 'Color matching',
-			label: 'Color matching 3-colors',
-			bank: {
-				style: 'text',
+			name: 'Color matching 3-colors',
+			style: {
 				text: 'Color matching 3-colors',
 				size: '14',
-				color: this.rgb(255, 255, 255),
-				bgcolor: this.rgb(0, 0, 0),
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
 			},
 			feedbacks: [
 				{
-					type: Constants.ColorMatching3Color,
-					options: {
-						bg: this.rgb(255, 255, 0),
-						fg: this.rgb(0, 0, 0),
-						[Constants.Red]: DEFAULT_COLOR_RED,
-						[Constants.Green]: DEFAULT_COLOR_GREEN,
-						[Constants.Blue]: DEFAULT_COLOR_BLUE,
-					},
-				},
-			],
-			actions: [
-				{
-					action: Constants.ColorMatchingMode,
-					options: {
-						mode: ntcontrol.ColorMatching['3COLORS'],
-					},
-				},
-				{
-					action: Constants.ColorMatching3Color,
+					feedbackId: Constants.ColorMatching3Color,
 					options: {
 						[Constants.Red]: DEFAULT_COLOR_RED,
 						[Constants.Green]: DEFAULT_COLOR_GREEN,
 						[Constants.Blue]: DEFAULT_COLOR_BLUE,
 					},
+					style: {
+						bgcolor: combineRgb(255, 255, 0),
+						color: combineRgb(0, 0, 0),
+					},
 				},
 			],
-		})
+			steps: [
+				{
+					down: [
+						{
+							action: Constants.ColorMatchingMode,
+							options: {
+								mode: ntcontrol.ColorMatching['3COLORS'],
+							},
+						},
+					],
+					up: [],
+				},
+				{
+					down: [
+						{
+							action: Constants.ColorMatching3Color,
+							options: {
+								[Constants.Red]: DEFAULT_COLOR_RED,
+								[Constants.Green]: DEFAULT_COLOR_GREEN,
+								[Constants.Blue]: DEFAULT_COLOR_BLUE,
+							},
+						},
+					],
+					up: [],
+				},
+			],
+		}
 
-		presets.push({
+		presets['Color_matching_7-colors'] = {
+			type: 'button',
 			category: 'Color matching',
-			label: 'Color matching 7-colors',
-			bank: {
-				style: 'text',
+			name: 'Color matching 7-colors',
+			style: {
 				text: 'Color matching 7-colors',
 				size: '14',
-				color: this.rgb(255, 255, 255),
-				bgcolor: this.rgb(0, 0, 0),
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
 			},
 			feedbacks: [
 				{
-					type: Constants.ColorMatching7Color,
-					options: {
-						bg: this.rgb(255, 255, 0),
-						fg: this.rgb(0, 0, 0),
-						[Constants.Red]: DEFAULT_COLOR_RED,
-						[Constants.Green]: DEFAULT_COLOR_GREEN,
-						[Constants.Blue]: DEFAULT_COLOR_BLUE,
-						[Constants.Cyan]: DEFAULT_COLOR_CYAN,
-						[Constants.Magenta]: DEFAULT_COLOR_MAGNETA,
-						[Constants.Yellow]: DEFAULT_COLOR_YELLOW,
-						[Constants.White]: DEFAULT_COLOR_WHITE,
-					},
-				},
-			],
-			actions: [
-				{
-					action: Constants.ColorMatchingMode,
-					options: {
-						mode: ntcontrol.ColorMatching['7COLORS'],
-					},
-				},
-				{
-					action: Constants.ColorMatching7Color,
+					feedbackId: Constants.ColorMatching7Color,
 					options: {
 						[Constants.Red]: DEFAULT_COLOR_RED,
 						[Constants.Green]: DEFAULT_COLOR_GREEN,
@@ -1461,11 +1494,45 @@ class instance extends instance_skel {
 						[Constants.Yellow]: DEFAULT_COLOR_YELLOW,
 						[Constants.White]: DEFAULT_COLOR_WHITE,
 					},
+					style: {
+						bgcolor: combineRgb(255, 255, 0),
+						color: combineRgb(0, 0, 0),
+					},
 				},
 			],
-		})
+			steps: [
+				{
+					down: [
+						{
+							action: Constants.ColorMatchingMode,
+							options: {
+								mode: ntcontrol.ColorMatching['7COLORS'],
+							},
+						},
+					],
+					up: [],
+				},
+				{
+					down: [
+						{
+							action: Constants.ColorMatching7Color,
+							options: {
+								[Constants.Red]: DEFAULT_COLOR_RED,
+								[Constants.Green]: DEFAULT_COLOR_GREEN,
+								[Constants.Blue]: DEFAULT_COLOR_BLUE,
+								[Constants.Cyan]: DEFAULT_COLOR_CYAN,
+								[Constants.Magenta]: DEFAULT_COLOR_MAGNETA,
+								[Constants.Yellow]: DEFAULT_COLOR_YELLOW,
+								[Constants.White]: DEFAULT_COLOR_WHITE,
+							},
+						},
+					],
+					up: [],
+				},
+			],
+		}
 
 		this.setPresetDefinitions(presets)
 	}
 }
-exports = module.exports = instance
+runEntrypoint(PanasonicInstance, UpgradeScripts)
