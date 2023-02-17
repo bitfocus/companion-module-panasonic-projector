@@ -1,13 +1,6 @@
 {
 	"name": "panasonic-projector",
-	"version": "1.0.4",
-	"keywords": [
-		"Projector"
-	],
-	"description": "Module implements the NTCONTROL protocol for panasonic projectors.",
-	"manufacturer": "Panasonic",
-	"product": "Projector",
-	"shortname": "projector",
+	"version": "3.0.0",
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
@@ -16,22 +9,18 @@
 		"type": "git",
 		"url": "git+https://github.com/bitfocus/companion-module-panasonic-projector.git"
 	},
-	"author": "Peter Schuster <develoment@peschuster.de>",
 	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/bitfocus/companion-module-panasonic-projector/issues"
-	},
-	"homepage": "https://github.com/bitfocus/companion-module-panasonic-projector#readme",
 	"dependencies": {
+		"@companion-module/base": "~1.1.1",
 		"ntcontrol-connection": "^0.2.0"
 	},
 	"devDependencies": {
+		"@companion-module/tools": "^1.0.0",
 		"eslint": "^6.5.1",
 		"eslint-config-standard": "^14.1.0",
 		"eslint-plugin-import": "^2.18.2",
 		"eslint-plugin-node": "^10.0.0",
 		"eslint-plugin-promise": "^4.2.1",
 		"eslint-plugin-standard": "^4.0.1"
-	},
-	"api_version": "1.0.0"
+	}
 }
