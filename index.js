@@ -1367,7 +1367,7 @@ class PanasonicInstance extends InstanceBase {
 						},
 					},
 				],
-				actions: [
+				steps: [
 					{
 						down: [
 							{
