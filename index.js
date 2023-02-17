@@ -1,4 +1,4 @@
-const { runEntrypoint, InstanceBase, Regex , combineRgb, InstanceStatus} = require('@companion-module/base')
+const { runEntrypoint, InstanceBase, Regex, combineRgb, InstanceStatus } = require('@companion-module/base')
 const ntcontrol = require('ntcontrol-connection')
 const UpgradeScripts = require('./upgrades')
 
@@ -501,7 +501,7 @@ class PanasonicInstance extends InstanceBase {
 			this.connection.destroy()
 			delete this.connection
 		}
-		this.updateStatus(InstanceStatus.UnknownError,'Connecting...')
+		this.updateStatus(InstanceStatus.UnknownError, 'Connecting...')
 		this.connection = this.createConnection(this.config)
 		this.connection.setAuthentication(this.config.user, this.config.pass)
 
@@ -517,41 +517,45 @@ class PanasonicInstance extends InstanceBase {
 		this.log('debug', 'Received change: ' + field + ' -> ' + value)
 		switch (field) {
 			case 'model':
-				this.setVariableValues('model', value)
+				this.setVariableValues({ model: value })
 				break
 			case 'name':
-				this.setVariableValues('name', value)
+				this.setVariableValues({ name: value })
 				break
 			case 'Power':
-				this.setVariableValues(Constants.Power, value)
+				this.setVariableValues({ [Constants.Power]: value })
 				this.checkFeedbacks(Constants.Power)
 				break
 			case 'Freeze':
-				this.setVariableValues(Constants.Freeze, value)
+				this.setVariableValues({ [Constants.Freeze]: value })
 				this.checkFeedbacks(Constants.Freeze)
 				break
 			case 'Shutter':
-				this.setVariableValues(Constants.Shutter, value)
+				this.setVariableValues({ [Constants.Shutter]: value })
 				this.checkFeedbacks(Constants.Shutter)
 				break
 			case 'InputSelect':
-				this.setVariableValues(Constants.InputSource, value)
+				this.setVariableValues({ [Constants.InputSource]: value })
 				this.checkFeedbacks(Constants.InputSource)
 				break
 			case 'LampControlStatus':
-				this.setVariableValues(Constants.LampStatus, ntcontrol.enumValueToLabel(ntcontrol.LampControlStatus, value))
+				this.setVariableValues({
+					[Constants.LampStatus]: ntcontrol.enumValueToLabel(ntcontrol.LampControlStatus, value),
+				})
 				this.checkFeedbacks(Constants.LampStatus)
 				break
 			case 'BrightnessControl':
-				this.setVariableValues(Constants.Brightness, value)
+				this.setVariableValues({ [Constants.Brightness]: value })
 				this.checkFeedbacks(Constants.Brightness)
 				break
 			case 'TestPattern':
-				this.setVariableValues(Constants.TestPattern, ntcontrol.enumValueToLabel(ntcontrol.TestPattern, value))
+				this.setVariableValues({ [Constants.TestPattern]: ntcontrol.enumValueToLabel(ntcontrol.TestPattern, value) })
 				this.checkFeedbacks(Constants.TestPattern)
 				break
 			case 'ColorMatching':
-				this.setVariableValues(Constants.ColorMatchingMode, ntcontrol.enumValueToLabel(ntcontrol.ColorMatching, value))
+				this.setVariableValues({
+					[Constants.ColorMatchingMode]: ntcontrol.enumValueToLabel(ntcontrol.ColorMatching, value),
+				})
 				this.handleColorMatchingChanged(value)
 				this.checkFeedbacks(Constants.ColorMatchingMode, Constants.ColorMatching3Color, Constants.ColorMatching7Color)
 				break
@@ -559,10 +563,10 @@ class PanasonicInstance extends InstanceBase {
 				var matches = /^ColorMatching(\d)Colors(Red|Green|Blue|Cyan|Magenta|Yellow|White)$/.exec(field)
 				if (matches.length === 3) {
 					try {
-						this.setVariableValues(
-							Constants.ColorMatchingMode + '_' + matches[1] + 'c_' + matches[2].toLocaleLowerCase(),
-							value.R + ',' + value.G + ',' + value.B
-						)
+						this.setVariableValues({
+							[Constants.ColorMatchingMode + '_' + matches[1] + 'c_' + matches[2].toLocaleLowerCase()]:
+								value.R + ',' + value.G + ',' + value.B,
+						})
 						this.checkFeedbacks(Constants.ColorMatching3Color, Constants.ColorMatching7Color)
 					} catch (e) {
 						this.debug(e)
