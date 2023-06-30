@@ -668,7 +668,13 @@ class PanasonicInstance extends InstanceBase {
 	 * @returns
 	 */
 	createProjector(connection) {
-		const obj = new ntcontrol.Projector(connection, this.log)
+		const obj = new ntcontrol.Projector(connection, (level, message) => {
+			/* 
+			We need to pass in a function wrapper to call log, because if the ntcontrol-connection module calls companion's log, it will throw an error.
+			this.log needs to be called by a Companion object.
+			*/
+			this.log(level, message)
+		})
 		obj.on(ntcontrol.Projector.Events.STATE_CHANGE, this.stateChangeHandler.bind(this))
 		obj.addMonitoring(ntcontrol.BrightnessControlCommand)
 		obj.addMonitoring(ntcontrol.TestPatternCommand)
