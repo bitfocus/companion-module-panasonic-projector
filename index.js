@@ -127,6 +127,17 @@ class PanasonicInstance extends InstanceBase {
 	}
 
 	/**
+	 * Pushes a variable value to Companion core and at the same time updates the internal variables storage
+	 */
+	setVariableValuesAndState(setObj) {
+		if (!setObj || typeof setObj !== 'object') return
+		for (let variable of Object.keys(setObj)) {
+			this.setVariableValues({ [variable]: setObj[variable] })
+			this.variables[variable] = setObj[variable]
+		}
+	}
+
+	/**
 	 * Setup the actions.
 	 *
 	 * @access public
@@ -515,45 +526,48 @@ class PanasonicInstance extends InstanceBase {
 
 	stateChangeHandler(field, value) {
 		this.log('debug', 'Received change: ' + field + ' -> ' + value)
+		if (typeof value === 'boolean') {
+			value = value ? Constants.On : Constants.Off
+		}
 		switch (field) {
 			case 'model':
-				this.setVariableValues({ model: value })
+				this.setVariableValuesAndState({ model: value })
 				break
 			case 'name':
-				this.setVariableValues({ name: value })
+				this.setVariableValuesAndState({ name: value })
 				break
 			case 'Power':
-				this.setVariableValues({ [Constants.Power]: value })
+				this.setVariableValuesAndState({ [Constants.Power]: value })
 				this.checkFeedbacks(Constants.Power)
 				break
 			case 'Freeze':
-				this.setVariableValues({ [Constants.Freeze]: value })
+				this.setVariableValuesAndState({ [Constants.Freeze]: value })
 				this.checkFeedbacks(Constants.Freeze)
 				break
 			case 'Shutter':
-				this.setVariableValues({ [Constants.Shutter]: value })
+				this.setVariableValuesAndState({ [Constants.Shutter]: value })
 				this.checkFeedbacks(Constants.Shutter)
 				break
 			case 'InputSelect':
-				this.setVariableValues({ [Constants.InputSource]: value })
+				this.setVariableValuesAndState({ [Constants.InputSource]: value })
 				this.checkFeedbacks(Constants.InputSource)
 				break
 			case 'LampControlStatus':
-				this.setVariableValues({
+				this.setVariableValuesAndState({
 					[Constants.LampStatus]: ntcontrol.enumValueToLabel(ntcontrol.LampControlStatus, value),
 				})
 				this.checkFeedbacks(Constants.LampStatus)
 				break
 			case 'BrightnessControl':
-				this.setVariableValues({ [Constants.Brightness]: value })
+				this.setVariableValuesAndState({ [Constants.Brightness]: value })
 				this.checkFeedbacks(Constants.Brightness)
 				break
 			case 'TestPattern':
-				this.setVariableValues({ [Constants.TestPattern]: ntcontrol.enumValueToLabel(ntcontrol.TestPattern, value) })
+				this.setVariableValuesAndState({ [Constants.TestPattern]: ntcontrol.enumValueToLabel(ntcontrol.TestPattern, value) })
 				this.checkFeedbacks(Constants.TestPattern)
 				break
 			case 'ColorMatching':
-				this.setVariableValues({
+				this.setVariableValuesAndState({
 					[Constants.ColorMatchingMode]: ntcontrol.enumValueToLabel(ntcontrol.ColorMatching, value),
 				})
 				this.handleColorMatchingChanged(value)
@@ -563,7 +577,7 @@ class PanasonicInstance extends InstanceBase {
 				var matches = /^ColorMatching(\d)Colors(Red|Green|Blue|Cyan|Magenta|Yellow|White)$/.exec(field)
 				if (matches.length === 3) {
 					try {
-						this.setVariableValues({
+						this.setVariableValuesAndState({
 							[Constants.ColorMatchingMode + '_' + matches[1] + 'c_' + matches[2].toLocaleLowerCase()]:
 								value.R + ',' + value.G + ',' + value.B,
 						})
@@ -760,6 +774,7 @@ class PanasonicInstance extends InstanceBase {
 						bgcolor: feedback.options.bg,
 					}
 				}
+				return {}
 			},
 		}
 
@@ -786,6 +801,7 @@ class PanasonicInstance extends InstanceBase {
 						bgcolor: feedback.options.bg,
 					}
 				}
+				return {}
 			},
 		}
 
@@ -812,6 +828,7 @@ class PanasonicInstance extends InstanceBase {
 						bgcolor: feedback.options.bg,
 					}
 				}
+				return {}
 			},
 		}
 
@@ -838,6 +855,7 @@ class PanasonicInstance extends InstanceBase {
 						bgcolor: feedback.options.bg,
 					}
 				}
+				return {}
 			},
 		}
 
@@ -864,6 +882,7 @@ class PanasonicInstance extends InstanceBase {
 						bgcolor: feedback.options.bg,
 					}
 				}
+				return {}
 			},
 		}
 
@@ -890,6 +909,7 @@ class PanasonicInstance extends InstanceBase {
 						bgcolor: feedback.options.bg,
 					}
 				}
+				return {}
 			},
 		}
 
@@ -916,6 +936,7 @@ class PanasonicInstance extends InstanceBase {
 						bgcolor: feedback.options.bg,
 					}
 				}
+				return {}
 			},
 		}
 
@@ -943,6 +964,7 @@ class PanasonicInstance extends InstanceBase {
 						bgcolor: feedback.options.bg,
 					}
 				}
+				return {}
 			},
 		}
 
@@ -980,6 +1002,7 @@ class PanasonicInstance extends InstanceBase {
 						bgcolor: feedback.options.bg,
 					}
 				}
+				return {}
 			},
 		}
 
@@ -1009,6 +1032,7 @@ class PanasonicInstance extends InstanceBase {
 						bgcolor: feedback.options.bg,
 					}
 				}
+				return {}
 			},
 		}
 
@@ -1016,19 +1040,19 @@ class PanasonicInstance extends InstanceBase {
 	}
 
 	setDefaultValues3Color() {
-		this.setVariableValues(Constants.ColorMatching3Color + '_' + Constants.Red, DEFAULT_COLOR_RED)
-		this.setVariableValues(Constants.ColorMatching3Color + '_' + Constants.Green, DEFAULT_COLOR_GREEN)
-		this.setVariableValues(Constants.ColorMatching3Color + '_' + Constants.Blue, DEFAULT_COLOR_BLUE)
+		this.setVariableValuesAndState(Constants.ColorMatching3Color + '_' + Constants.Red, DEFAULT_COLOR_RED)
+		this.setVariableValuesAndState(Constants.ColorMatching3Color + '_' + Constants.Green, DEFAULT_COLOR_GREEN)
+		this.setVariableValuesAndState(Constants.ColorMatching3Color + '_' + Constants.Blue, DEFAULT_COLOR_BLUE)
 	}
 
 	setDefaultValues7Color() {
-		this.setVariableValues(Constants.ColorMatching7Color + '_' + Constants.Red, DEFAULT_COLOR_RED)
-		this.setVariableValues(Constants.ColorMatching7Color + '_' + Constants.Green, DEFAULT_COLOR_GREEN)
-		this.setVariableValues(Constants.ColorMatching7Color + '_' + Constants.Blue, DEFAULT_COLOR_BLUE)
-		this.setVariableValues(Constants.ColorMatching7Color + '_' + Constants.Cyan, DEFAULT_COLOR_CYAN)
-		this.setVariableValues(Constants.ColorMatching7Color + '_' + Constants.Magenta, DEFAULT_COLOR_MAGNETA)
-		this.setVariableValues(Constants.ColorMatching7Color + '_' + Constants.Yellow, DEFAULT_COLOR_YELLOW)
-		this.setVariableValues(Constants.ColorMatching7Color + '_' + Constants.White, DEFAULT_COLOR_WHITE)
+		this.setVariableValuesAndState(Constants.ColorMatching7Color + '_' + Constants.Red, DEFAULT_COLOR_RED)
+		this.setVariableValuesAndState(Constants.ColorMatching7Color + '_' + Constants.Green, DEFAULT_COLOR_GREEN)
+		this.setVariableValuesAndState(Constants.ColorMatching7Color + '_' + Constants.Blue, DEFAULT_COLOR_BLUE)
+		this.setVariableValuesAndState(Constants.ColorMatching7Color + '_' + Constants.Cyan, DEFAULT_COLOR_CYAN)
+		this.setVariableValuesAndState(Constants.ColorMatching7Color + '_' + Constants.Magenta, DEFAULT_COLOR_MAGNETA)
+		this.setVariableValuesAndState(Constants.ColorMatching7Color + '_' + Constants.Yellow, DEFAULT_COLOR_YELLOW)
+		this.setVariableValuesAndState(Constants.ColorMatching7Color + '_' + Constants.White, DEFAULT_COLOR_WHITE)
 	}
 
 	/**
@@ -1144,7 +1168,7 @@ class PanasonicInstance extends InstanceBase {
 		this.setDefaultValues7Color()
 
 		this.setVariableDefinitions(variables)
-		this.setVariableValues({
+		this.setVariableValuesAndState({
 			[Constants.LampStatus]: undefined,
 			[Constants.ColorMatchingMode]: ntcontrol.ColorMatching.Off,
 			[Constants.TestPattern]: ntcontrol.TestPattern.Off,
