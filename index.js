@@ -25,6 +25,8 @@ const Constants = {
 	//GridDisplay: 'grid_display',
 	Brightness: 'brightness',
 	LampStatus: 'lamp_state',
+	LensMemory: 'lens_mem',
+	LoadLensMemory: 'load_lens_mem',
 	On: 'on',
 	Off: 'off',
 	Toggle: 'toggle',
@@ -109,6 +111,7 @@ class PanasonicInstance extends InstanceBase {
 		this.choiceTestPattern = this.buildList(ntcontrol.TestPattern)
 		this.choiceGridMode = this.buildList(ntcontrol.DisplayGridLines)
 		this.choiceLampState = this.buildList(ntcontrol.LampControlStatus)
+		this.choiceLoadLensMemory = this.buildList(ntcontrol.LensMemory)
 
 		this.choiceOnOff = [
 			{ id: Constants.On, label: Constants.On },
@@ -259,6 +262,22 @@ class PanasonicInstance extends InstanceBase {
 			],
 			callback: (action) => {
 				this.projector.setInput(action.options[Constants.InputSource])
+			}
+		}
+
+		actions[Constants.LoadLensMemory] = {
+			name: 'Load lens memory',
+			options: [
+				{
+					type: 'dropdown',
+					labler: 'Lens Memory',
+					id: Constants.LensMemory,
+					default: ntcontrol.LensMemory['LENS MEMORY1'],
+					choices: this.choiceLoadLensMemory,
+				},
+			],
+			callback: (action) => {
+				this.sendValue(ntcontrol.LensMemoryLoadCommand, action.options[Constants.LensMemory])
 			}
 		}
 
@@ -561,6 +580,10 @@ class PanasonicInstance extends InstanceBase {
 			case 'TestPattern':
 				this.setVariableValuesAndState({ [Constants.TestPattern]: ntcontrol.enumValueToLabel(ntcontrol.TestPattern, value) })
 				this.checkFeedbacks(Constants.TestPattern)
+				break
+			case 'LoadLensMemory':
+				this.setVariableValuesAndState({ [Constants.LoadLensMemory]: ntcontrol.enumValueToLabel(ntcontrol.LensMemory, value) })
+				this.checkFeedbacks(Constants.LensMemory)
 				break
 			case 'ColorMatching':
 				this.setVariableValuesAndState({
