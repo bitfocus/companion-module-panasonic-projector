@@ -34,7 +34,7 @@ const Constants = {
 	Cyan: 'cyan',
 	Magenta: 'magenta',
 	Yellow: 'yellow',
-	White: 'white'
+	White: 'white',
 }
 
 const EMPTY_LAMBDA = () => {
@@ -46,7 +46,7 @@ function foregroundPicker(defaultValue) {
 		type: 'colorpicker',
 		label: 'Foreground color',
 		id: 'fg',
-		default: defaultValue
+		default: defaultValue,
 	}
 }
 
@@ -55,7 +55,7 @@ function backgroundPicker(defaultValue) {
 		type: 'colorpicker',
 		label: 'Background color',
 		id: 'bg',
-		default: defaultValue
+		default: defaultValue,
 	}
 }
 
@@ -66,7 +66,7 @@ function rgbTextInput(id, label, defaultValue) {
 		id: id,
 		tooltip: label,
 		default: defaultValue,
-		regex: Regex.SOMETHING
+		regex: Regex.SOMETHING,
 	}
 }
 
@@ -112,13 +112,13 @@ class PanasonicInstance extends InstanceBase {
 
 		this.choiceOnOff = [
 			{ id: Constants.On, label: Constants.On },
-			{ id: Constants.Off, label: Constants.Off }
+			{ id: Constants.Off, label: Constants.Off },
 		]
 
 		this.choiceToggle = [
 			{ id: Constants.On, label: Constants.On },
 			{ id: Constants.Off, label: Constants.Off },
-			{ id: Constants.Toggle, label: Constants.Toggle }
+			{ id: Constants.Toggle, label: Constants.Toggle },
 		]
 	}
 
@@ -150,8 +150,8 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Mode',
 					id: 'mode',
 					default: Constants.Toggle,
-					choices: this.choiceToggle
-				}
+					choices: this.choiceToggle,
+				},
 			],
 			callback: (action) => {
 				if (action.options.mode == Constants.On) {
@@ -163,7 +163,7 @@ class PanasonicInstance extends InstanceBase {
 				} else {
 					this.log('error', 'Invalid value for power command: ' + action.options.mode)
 				}
-			}
+			},
 		}
 
 		actions[Constants.Shutter] = {
@@ -174,8 +174,8 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Mode',
 					id: 'mode',
 					default: Constants.Toggle,
-					choices: this.choiceToggle
-				}
+					choices: this.choiceToggle,
+				},
 			],
 			callback: (action) => {
 				if (action.options.mode == Constants.On) {
@@ -187,7 +187,7 @@ class PanasonicInstance extends InstanceBase {
 				} else {
 					this.log('error', 'Invalid value for shutter command: ' + action.options.mode)
 				}
-			}
+			},
 		}
 
 		actions[Constants.ShutterFadeIn] = {
@@ -198,12 +198,12 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Fade-in setting',
 					id: 'value',
 					default: '0.0',
-					choices: this.choiceShutterFadeTimes
-				}
+					choices: this.choiceShutterFadeTimes,
+				},
 			],
 			callback: (action) => {
 				this.sendValue(ntcontrol.ShutterFadeInCommand, action.options.value)
-			}
+			},
 		}
 
 		actions[Constants.ShutterFadeOut] = {
@@ -214,12 +214,12 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Fade-out setting',
 					id: 'value',
 					default: '0.0',
-					choices: this.choiceShutterFadeTimes
-				}
+					choices: this.choiceShutterFadeTimes,
+				},
 			],
 			callback: (action) => {
 				this.sendValue(ntcontrol.ShutterFadeOutCommand, action.options.value)
-			}
+			},
 		}
 
 		actions[Constants.Freeze] = {
@@ -230,8 +230,8 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Mode',
 					id: 'mode',
 					default: Constants.Toggle,
-					choices: this.choiceToggle
-				}
+					choices: this.choiceToggle,
+				},
 			],
 			callback: (action) => {
 				if (action.options.mode == Constants.On) {
@@ -243,7 +243,7 @@ class PanasonicInstance extends InstanceBase {
 				} else {
 					this.log('error', 'Invalid value for freeze command: ' + action.options.mode)
 				}
-			}
+			},
 		}
 
 		actions[Constants.InputSource] = {
@@ -254,12 +254,12 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Input Source',
 					id: Constants.InputSource,
 					default: '',
-					choices: this.choiceInputs
-				}
+					choices: this.choiceInputs,
+				},
 			],
 			callback: (action) => {
 				this.projector.setInput(action.options[Constants.InputSource])
-			}
+			},
 		}
 
 		actions[Constants.ColorMatchingMode] = {
@@ -270,12 +270,12 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Color Matching',
 					id: 'mode',
 					default: ntcontrol.ColorMatching.Off,
-					choices: this.choiceColorMatching
-				}
+					choices: this.choiceColorMatching,
+				},
 			],
 			callback: (action) => {
 				this.sendValue(ntcontrol.ColorMatchingCommand, action.options.mode)
-			}
+			},
 		}
 
 		actions[Constants.ColorMatching3Color] = {
@@ -283,7 +283,7 @@ class PanasonicInstance extends InstanceBase {
 			options: [
 				rgbTextInput(Constants.Red, 'Red', DEFAULT_COLOR_RED),
 				rgbTextInput(Constants.Green, 'Green', DEFAULT_COLOR_GREEN),
-				rgbTextInput(Constants.Blue, 'Blue', DEFAULT_COLOR_BLUE)
+				rgbTextInput(Constants.Blue, 'Blue', DEFAULT_COLOR_BLUE),
 			],
 			callback: (action) => {
 				this.sendValue(
@@ -298,7 +298,7 @@ class PanasonicInstance extends InstanceBase {
 					ntcontrol.ColorMatching3ColorsBlueCommand,
 					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Blue])
 				)
-			}
+			},
 		}
 
 		actions[Constants.ColorMatching7Color] = {
@@ -310,7 +310,7 @@ class PanasonicInstance extends InstanceBase {
 				rgbTextInput(Constants.Cyan, 'Cyan', DEFAULT_COLOR_CYAN),
 				rgbTextInput(Constants.Magenta, 'Magenta', DEFAULT_COLOR_MAGNETA),
 				rgbTextInput(Constants.Yellow, 'Yellow', DEFAULT_COLOR_YELLOW),
-				rgbTextInput(Constants.White, 'White', DEFAULT_COLOR_WHITE)
+				rgbTextInput(Constants.White, 'White', DEFAULT_COLOR_WHITE),
 			],
 			callback: (action) => {
 				this.sendValue(
@@ -341,7 +341,7 @@ class PanasonicInstance extends InstanceBase {
 					ntcontrol.ColorMatching7ColorsWhiteCommand,
 					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.White])
 				)
-			}
+			},
 		}
 
 		actions[Constants.TestPattern] = {
@@ -352,12 +352,12 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Test Pattern',
 					id: Constants.TestPattern,
 					default: ntcontrol.TestPattern.Off,
-					choices: this.choiceTestPattern
-				}
+					choices: this.choiceTestPattern,
+				},
 			],
 			callback: (action) => {
 				this.sendValue(ntcontrol.TestPatternCommand, action.options.test_pattern)
-			}
+			},
 		}
 
 		// TODO: Should work, but needs testing with a projector with activated upgrade kit
@@ -409,12 +409,12 @@ class PanasonicInstance extends InstanceBase {
 					max: 100,
 					default: 100,
 					required: true,
-					range: true
-				}
+					range: true,
+				},
 			],
 			callback: (action) => {
 				this.sendValue(ntcontrol.BrightnessControlCommand, action.options.value)
-			}
+			},
 		}
 
 		this.setActionDefinitions(actions)
@@ -434,14 +434,14 @@ class PanasonicInstance extends InstanceBase {
 				id: 'info',
 				width: 12,
 				label: 'Information',
-				value: 'This module will connect to any supported Panasonic projector device.'
+				value: 'This module will connect to any supported Panasonic projector device.',
 			},
 			{
 				type: 'textinput',
 				id: 'host',
 				label: 'Projector IP',
 				width: 8,
-				regex: Regex.IP
+				regex: Regex.IP,
 			},
 			{
 				type: 'textinput',
@@ -449,22 +449,33 @@ class PanasonicInstance extends InstanceBase {
 				label: 'Control Port',
 				width: 4,
 				default: '1024',
-				regex: Regex.PORT
+				regex: Regex.PORT,
 			},
 			{
 				type: 'textinput',
 				id: 'user',
 				width: 6,
 				label: 'Username',
-				default: 'admin1'
+				default: 'admin1',
 			},
 			{
 				type: 'textinput',
 				id: 'pass',
 				width: 6,
 				label: 'Password',
-				default: 'panasonic'
-			}
+				default: 'panasonic',
+			},
+			{
+				type: 'dropdown',
+				id: 'feedback',
+				width: 6,
+				label: 'Use Feedback',
+				choices: [
+					{ id: 'yes', label: 'Yes' },
+					{ id: 'no', label: 'No' },
+				],
+				default: 'yes',
+			},
 		]
 	}
 
@@ -550,7 +561,7 @@ class PanasonicInstance extends InstanceBase {
 				break
 			case 'LampControlStatus':
 				this.setVariableValuesAndState({
-					[Constants.LampStatus]: ntcontrol.enumValueToLabel(ntcontrol.LampControlStatus, value)
+					[Constants.LampStatus]: ntcontrol.enumValueToLabel(ntcontrol.LampControlStatus, value),
 				})
 				this.checkFeedbacks(Constants.LampStatus)
 				break
@@ -559,12 +570,14 @@ class PanasonicInstance extends InstanceBase {
 				this.checkFeedbacks(Constants.Brightness)
 				break
 			case 'TestPattern':
-				this.setVariableValuesAndState({ [Constants.TestPattern]: ntcontrol.enumValueToLabel(ntcontrol.TestPattern, value) })
+				this.setVariableValuesAndState({
+					[Constants.TestPattern]: ntcontrol.enumValueToLabel(ntcontrol.TestPattern, value),
+				})
 				this.checkFeedbacks(Constants.TestPattern)
 				break
 			case 'ColorMatching':
 				this.setVariableValuesAndState({
-					[Constants.ColorMatchingMode]: ntcontrol.enumValueToLabel(ntcontrol.ColorMatching, value)
+					[Constants.ColorMatchingMode]: ntcontrol.enumValueToLabel(ntcontrol.ColorMatching, value),
 				})
 				this.handleColorMatchingChanged(value)
 				this.checkFeedbacks(Constants.ColorMatchingMode, Constants.ColorMatching3Color, Constants.ColorMatching7Color)
@@ -575,7 +588,7 @@ class PanasonicInstance extends InstanceBase {
 					try {
 						this.setVariableValuesAndState({
 							[Constants.ColorMatchingMode + '_' + matches[1] + 'c_' + matches[2].toLocaleLowerCase()]:
-								value.R + ',' + value.G + ',' + value.B
+								value.R + ',' + value.G + ',' + value.B,
 						})
 						this.checkFeedbacks(Constants.ColorMatching3Color, Constants.ColorMatching7Color)
 					} catch (e) {
@@ -686,9 +699,13 @@ class PanasonicInstance extends InstanceBase {
 			this.log(level, message)
 		})
 		obj.on(ntcontrol.Projector.Events.STATE_CHANGE, this.stateChangeHandler.bind(this))
-		obj.addMonitoring(ntcontrol.BrightnessControlCommand)
-		obj.addMonitoring(ntcontrol.TestPatternCommand)
-		obj.addMonitoring(ntcontrol.ColorMatchingCommand)
+		this.log('debug', `Use feedback: ${this.config.feedback}`)
+		if (this.config.feedback !=='no') {
+			this.config.feedback = 'yes'
+			obj.addMonitoring(ntcontrol.BrightnessControlCommand)
+			obj.addMonitoring(ntcontrol.TestPatternCommand)
+			obj.addMonitoring(ntcontrol.ColorMatchingCommand)
+		}
 		return obj
 	}
 
@@ -757,8 +774,8 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Lamp state',
 					id: 'state',
 					default: ntcontrol.LampControlStatus['LAMP ON'],
-					choices: this.choiceLampState
-				}
+					choices: this.choiceLampState,
+				},
 			],
 			callback: (feedback) => {
 				if (
@@ -767,11 +784,11 @@ class PanasonicInstance extends InstanceBase {
 				) {
 					return {
 						color: feedback.options.fg,
-						bgcolor: feedback.options.bg
+						bgcolor: feedback.options.bg,
 					}
 				}
 				return {}
-			}
+			},
 		}
 
 		feedbacks[Constants.Power] = {
@@ -787,18 +804,18 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Power state',
 					id: 'state',
 					default: Constants.On,
-					choices: this.choiceOnOff
-				}
+					choices: this.choiceOnOff,
+				},
 			],
 			callback: (feedback) => {
 				if (this.variables[Constants.Power] === feedback.options.state) {
 					return {
 						color: feedback.options.fg,
-						bgcolor: feedback.options.bg
+						bgcolor: feedback.options.bg,
 					}
 				}
 				return {}
-			}
+			},
 		}
 
 		feedbacks[Constants.Shutter] = {
@@ -814,18 +831,18 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Shutter state',
 					id: 'state',
 					default: Constants.On,
-					choices: this.choiceOnOff
-				}
+					choices: this.choiceOnOff,
+				},
 			],
 			callback: (feedback) => {
 				if (this.variables[Constants.Shutter] === feedback.options.state) {
 					return {
 						color: feedback.options.fg,
-						bgcolor: feedback.options.bg
+						bgcolor: feedback.options.bg,
 					}
 				}
 				return {}
-			}
+			},
 		}
 
 		feedbacks[Constants.Freeze] = {
@@ -841,18 +858,18 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Freeze state',
 					id: 'state',
 					default: Constants.On,
-					choices: this.choiceOnOff
-				}
+					choices: this.choiceOnOff,
+				},
 			],
 			callback: (feedback) => {
 				if (this.variables[Constants.Freeze] === feedback.options.state) {
 					return {
 						color: feedback.options.fg,
-						bgcolor: feedback.options.bg
+						bgcolor: feedback.options.bg,
 					}
 				}
 				return {}
-			}
+			},
 		}
 
 		feedbacks[Constants.InputSource] = {
@@ -868,18 +885,18 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Input',
 					id: Constants.InputSource,
 					default: '',
-					choices: this.choiceInputs
-				}
+					choices: this.choiceInputs,
+				},
 			],
 			callback: (feedback) => {
 				if (this.variables[Constants.InputSource] === feedback.options[Constants.InputSource]) {
 					return {
 						color: feedback.options.fg,
-						bgcolor: feedback.options.bg
+						bgcolor: feedback.options.bg,
 					}
 				}
 				return {}
-			}
+			},
 		}
 
 		feedbacks[Constants.TestPattern] = {
@@ -895,18 +912,18 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Test pattern',
 					id: Constants.TestPattern,
 					default: ntcontrol.TestPattern.Off,
-					choices: this.choiceTestPattern
-				}
+					choices: this.choiceTestPattern,
+				},
 			],
 			callback: (feedback) => {
 				if (ntcontrol.TestPattern[this.variables[Constants.TestPattern]] === feedback.options[Constants.TestPattern]) {
 					return {
 						color: feedback.options.fg,
-						bgcolor: feedback.options.bg
+						bgcolor: feedback.options.bg,
 					}
 				}
 				return {}
-			}
+			},
 		}
 
 		feedbacks[Constants.ColorMatchingMode] = {
@@ -922,18 +939,18 @@ class PanasonicInstance extends InstanceBase {
 					label: 'Color matching mode',
 					id: 'mode',
 					default: ntcontrol.ColorMatching.OFF,
-					choices: this.choiceColorMatching
-				}
+					choices: this.choiceColorMatching,
+				},
 			],
 			callback: (feedback) => {
 				if (ntcontrol.ColorMatching[this.variables[Constants.ColorMatchingMode]] === feedback.options.mode) {
 					return {
 						color: feedback.options.fg,
-						bgcolor: feedback.options.bg
+						bgcolor: feedback.options.bg,
 					}
 				}
 				return {}
-			}
+			},
 		}
 
 		feedbacks[Constants.ColorMatching3Color] = {
@@ -946,7 +963,7 @@ class PanasonicInstance extends InstanceBase {
 				backgroundPicker(combineRgb(255, 255, 0)),
 				rgbTextInput(Constants.Red, 'Red', DEFAULT_COLOR_RED),
 				rgbTextInput(Constants.Green, 'Green', DEFAULT_COLOR_GREEN),
-				rgbTextInput(Constants.Blue, 'Blue', DEFAULT_COLOR_BLUE)
+				rgbTextInput(Constants.Blue, 'Blue', DEFAULT_COLOR_BLUE),
 			],
 			callback: (feedback) => {
 				if (
@@ -957,11 +974,11 @@ class PanasonicInstance extends InstanceBase {
 				) {
 					return {
 						color: feedback.options.fg,
-						bgcolor: feedback.options.bg
+						bgcolor: feedback.options.bg,
 					}
 				}
 				return {}
-			}
+			},
 		}
 
 		feedbacks[Constants.ColorMatching7Color] = {
@@ -978,7 +995,7 @@ class PanasonicInstance extends InstanceBase {
 				rgbTextInput(Constants.Cyan, 'Cyan', DEFAULT_COLOR_CYAN),
 				rgbTextInput(Constants.Magenta, 'Magenta', DEFAULT_COLOR_MAGNETA),
 				rgbTextInput(Constants.Yellow, 'Yellow', DEFAULT_COLOR_YELLOW),
-				rgbTextInput(Constants.White, 'White', DEFAULT_COLOR_WHITE)
+				rgbTextInput(Constants.White, 'White', DEFAULT_COLOR_WHITE),
 			],
 			callback: (feedback) => {
 				if (
@@ -995,11 +1012,11 @@ class PanasonicInstance extends InstanceBase {
 				) {
 					return {
 						color: feedback.options.fg,
-						bgcolor: feedback.options.bg
+						bgcolor: feedback.options.bg,
 					}
 				}
 				return {}
-			}
+			},
 		}
 
 		feedbacks[Constants.Brightness] = {
@@ -1018,18 +1035,18 @@ class PanasonicInstance extends InstanceBase {
 					max: 100,
 					default: 100,
 					required: true,
-					range: true
-				}
+					range: true,
+				},
 			],
 			callback: (feedback) => {
 				if (this.variables[Constants.Brightness] === feedback.options.value) {
 					return {
 						color: feedback.options.fg,
-						bgcolor: feedback.options.bg
+						bgcolor: feedback.options.bg,
 					}
 				}
 				return {}
-			}
+			},
 		}
 
 		this.setFeedbackDefinitions(feedbacks)
@@ -1062,102 +1079,102 @@ class PanasonicInstance extends InstanceBase {
 
 		variables.push({
 			name: 'Name',
-			variableId: 'name'
+			variableId: 'name',
 		})
 
 		variables.push({
 			name: 'Model',
-			variableId: 'model'
+			variableId: 'model',
 		})
 
 		variables.push({
 			name: 'Power state',
-			variableId: Constants.Power
+			variableId: Constants.Power,
 		})
 
 		variables.push({
 			name: 'Shutter state',
-			variableId: Constants.Shutter
+			variableId: Constants.Shutter,
 		})
 
 		variables.push({
 			name: 'Freeze state',
-			variableId: Constants.Freeze
+			variableId: Constants.Freeze,
 		})
 
 		variables.push({
 			name: 'Input',
-			variableId: Constants.InputSource
+			variableId: Constants.InputSource,
 		})
 
 		variables.push({
 			name: 'Lamp state',
-			variableId: Constants.LampStatus
+			variableId: Constants.LampStatus,
 		})
 
 		variables.push({
 			name: 'Brightness',
-			variableId: Constants.Brightness
+			variableId: Constants.Brightness,
 		})
 
 		variables.push({
 			name: 'Test Pattern',
-			variableId: Constants.TestPattern
+			variableId: Constants.TestPattern,
 		})
 
 		variables.push({
 			name: 'Color Matching Mode',
-			variableId: Constants.ColorMatchingMode
+			variableId: Constants.ColorMatchingMode,
 		})
 
 		variables.push({
 			name: 'Color Matching 3-Colors: Red',
-			variableId: Constants.ColorMatching3Color + '_' + Constants.Red
+			variableId: Constants.ColorMatching3Color + '_' + Constants.Red,
 		})
 
 		variables.push({
 			name: 'Color Matching 3-Colors: Green',
-			variableId: Constants.ColorMatching3Color + '_' + Constants.Green
+			variableId: Constants.ColorMatching3Color + '_' + Constants.Green,
 		})
 
 		variables.push({
 			name: 'Color Matching 3-Colors: Blue',
-			variableId: Constants.ColorMatching3Color + '_' + Constants.Blue
+			variableId: Constants.ColorMatching3Color + '_' + Constants.Blue,
 		})
 
 		variables.push({
 			name: 'Color Matching 7-Colors: Red',
-			variableId: Constants.ColorMatching7Color + '_' + Constants.Red
+			variableId: Constants.ColorMatching7Color + '_' + Constants.Red,
 		})
 
 		variables.push({
 			name: 'Color Matching 7-Colors: Green',
-			variableId: Constants.ColorMatching7Color + '_' + Constants.Green
+			variableId: Constants.ColorMatching7Color + '_' + Constants.Green,
 		})
 
 		variables.push({
 			name: 'Color Matching 7-Colors: Blue',
-			variableId: Constants.ColorMatching7Color + '_' + Constants.Blue
+			variableId: Constants.ColorMatching7Color + '_' + Constants.Blue,
 		})
 
 		variables.push({
 			name: 'Color Matching 7-Colors: Cyan',
-			variableId: Constants.ColorMatching7Color + '_' + Constants.Cyan
+			variableId: Constants.ColorMatching7Color + '_' + Constants.Cyan,
 		})
 
 		variables.push({
 			name: 'Color Matching 7-Colors: Magenta',
-			variableId: Constants.ColorMatching7Color + '_' + Constants.Magenta
+			variableId: Constants.ColorMatching7Color + '_' + Constants.Magenta,
 		})
 
 		variables.push({
 			name: 'Color Matching 7-Colors: Yellow',
-			variableId: Constants.ColorMatching7Color + '_' + Constants.Yellow
+			variableId: Constants.ColorMatching7Color + '_' + Constants.Yellow,
 		})
 
 		variables.push({
 			name: 'Color Matching 7-Colors: White',
-			variableId: Constants.ColorMatching7Color + '_' + Constants.White
+			variableId: Constants.ColorMatching7Color + '_' + Constants.White,
 		})
 
 		this.setDefaultValues3Color()
@@ -1174,7 +1191,7 @@ class PanasonicInstance extends InstanceBase {
 			[Constants.Power]: undefined,
 			[Constants.Shutter]: undefined,
 			name: '',
-			model: ''
+			model: '',
 		})
 	}
 
@@ -1195,19 +1212,19 @@ class PanasonicInstance extends InstanceBase {
 				text: 'Power Toggle',
 				size: '18',
 				color: combineRgb(255, 255, 255),
-				bgcolor: combineRgb(0, 0, 0)
+				bgcolor: combineRgb(0, 0, 0),
 			},
 			feedbacks: [
 				{
 					feedbackId: Constants.Power,
 					options: {
-						state: Constants.On
+						state: Constants.On,
 					},
 					style: {
 						bgcolor: combineRgb(255, 0, 0),
-						color: combineRgb(255, 255, 255)
-					}
-				}
+						color: combineRgb(255, 255, 255),
+					},
+				},
 			],
 			steps: [
 				{
@@ -1215,13 +1232,13 @@ class PanasonicInstance extends InstanceBase {
 						{
 							actionId: Constants.Power,
 							options: {
-								mode: Constants.Toggle
-							}
-						}
+								mode: Constants.Toggle,
+							},
+						},
 					],
-					up: []
-				}
-			]
+					up: [],
+				},
+			],
 		}
 
 		presets['Shutter_Toggle'] = {
@@ -1232,19 +1249,19 @@ class PanasonicInstance extends InstanceBase {
 				text: 'Shutter Toggle',
 				size: '18',
 				color: combineRgb(255, 255, 255),
-				bgcolor: combineRgb(0, 0, 0)
+				bgcolor: combineRgb(0, 0, 0),
 			},
 			feedbacks: [
 				{
 					feedbackId: Constants.Shutter,
 					options: {
-						state: Constants.On
+						state: Constants.On,
 					},
 					style: {
 						bgcolor: combineRgb(255, 0, 0),
-						color: combineRgb(255, 255, 255)
-					}
-				}
+						color: combineRgb(255, 255, 255),
+					},
+				},
 			],
 			steps: [
 				{
@@ -1252,13 +1269,13 @@ class PanasonicInstance extends InstanceBase {
 						{
 							actionId: Constants.Shutter,
 							options: {
-								mode: Constants.Toggle
-							}
-						}
+								mode: Constants.Toggle,
+							},
+						},
 					],
-					up: []
-				}
-			]
+					up: [],
+				},
+			],
 		}
 
 		presets['Freeze_Toggle'] = {
@@ -1269,19 +1286,19 @@ class PanasonicInstance extends InstanceBase {
 				text: 'Freeze Toggle',
 				size: '18',
 				color: combineRgb(255, 255, 255),
-				bgcolor: combineRgb(0, 0, 0)
+				bgcolor: combineRgb(0, 0, 0),
 			},
 			feedbacks: [
 				{
 					feedbackId: Constants.Freeze,
 					options: {
-						state: Constants.On
+						state: Constants.On,
 					},
 					style: {
 						bgcolor: combineRgb(255, 0, 0),
-						color: combineRgb(255, 255, 255)
-					}
-				}
+						color: combineRgb(255, 255, 255),
+					},
+				},
 			],
 			steps: [
 				{
@@ -1289,13 +1306,13 @@ class PanasonicInstance extends InstanceBase {
 						{
 							actionId: Constants.Freeze,
 							options: {
-								mode: Constants.Toggle
-							}
-						}
+								mode: Constants.Toggle,
+							},
+						},
 					],
-					up: []
-				}
-			]
+					up: [],
+				},
+			],
 		}
 
 		presets['Brightness'] = {
@@ -1306,19 +1323,19 @@ class PanasonicInstance extends InstanceBase {
 				text: 'Brightness\\n100',
 				size: '14',
 				color: combineRgb(255, 255, 255),
-				bgcolor: combineRgb(0, 0, 0)
+				bgcolor: combineRgb(0, 0, 0),
 			},
 			feedbacks: [
 				{
 					feedbackId: Constants.Brightness,
 					options: {
-						value: 100
+						value: 100,
 					},
 					style: {
 						bgcolor: combineRgb(255, 255, 0),
-						color: combineRgb(255, 255, 255)
-					}
-				}
+						color: combineRgb(255, 255, 255),
+					},
+				},
 			],
 			steps: [
 				{
@@ -1326,13 +1343,13 @@ class PanasonicInstance extends InstanceBase {
 						{
 							action: Constants.Brightness,
 							options: {
-								value: 100
-							}
-						}
+								value: 100,
+							},
+						},
 					],
-					up: []
-				}
-			]
+					up: [],
+				},
+			],
 		}
 
 		for (let input of this.choiceInputs) {
@@ -1344,19 +1361,19 @@ class PanasonicInstance extends InstanceBase {
 					text: 'Input\\n' + (input.label || '').replace('COMPUTER', 'COMP. '),
 					size: '14',
 					color: combineRgb(255, 255, 255),
-					bgcolor: combineRgb(0, 0, 0)
+					bgcolor: combineRgb(0, 0, 0),
 				},
 				feedbacks: [
 					{
 						feedbackId: Constants.InputSource,
 						options: {
-							[Constants.InputSource]: input.id
+							[Constants.InputSource]: input.id,
 						},
 						style: {
 							bgcolor: combineRgb(255, 255, 0),
-							color: combineRgb(0, 0, 0)
-						}
-					}
+							color: combineRgb(0, 0, 0),
+						},
+					},
 				],
 				steps: [
 					{
@@ -1364,13 +1381,13 @@ class PanasonicInstance extends InstanceBase {
 							{
 								actionId: Constants.InputSource,
 								options: {
-									[Constants.InputSource]: input.id
-								}
-							}
+									[Constants.InputSource]: input.id,
+								},
+							},
 						],
-						up: []
-					}
-				]
+						up: [],
+					},
+				],
 			}
 		}
 
@@ -1383,19 +1400,19 @@ class PanasonicInstance extends InstanceBase {
 					text: 'Pattern\\n' + (pattern.label || '').replace('Crosshatch', 'Cross').replace('orizontal', 'orz.'),
 					size: '14',
 					color: combineRgb(255, 255, 255),
-					bgcolor: combineRgb(0, 0, 0)
+					bgcolor: combineRgb(0, 0, 0),
 				},
 				feedbacks: [
 					{
 						feedbackId: Constants.TestPattern,
 						options: {
-							[Constants.TestPattern]: pattern.id
+							[Constants.TestPattern]: pattern.id,
 						},
 						style: {
 							bgcolor: combineRgb(255, 255, 0),
-							color: combineRgb(0, 0, 0)
-						}
-					}
+							color: combineRgb(0, 0, 0),
+						},
+					},
 				],
 				steps: [
 					{
@@ -1403,13 +1420,13 @@ class PanasonicInstance extends InstanceBase {
 							{
 								actionId: Constants.TestPattern,
 								options: {
-									[Constants.TestPattern]: pattern.id
-								}
-							}
+									[Constants.TestPattern]: pattern.id,
+								},
+							},
 						],
-						up: []
-					}
-				]
+						up: [],
+					},
+				],
 			}
 		}
 
@@ -1421,19 +1438,19 @@ class PanasonicInstance extends InstanceBase {
 				text: 'Color matching OFF',
 				size: '14',
 				color: combineRgb(255, 255, 255),
-				bgcolor: combineRgb(0, 0, 0)
+				bgcolor: combineRgb(0, 0, 0),
 			},
 			feedbacks: [
 				{
 					feedbackId: Constants.ColorMatchingMode,
 					options: {
-						state: ntcontrol.ColorMatching.OFF
+						state: ntcontrol.ColorMatching.OFF,
 					},
 					style: {
 						bgcolor: combineRgb(255, 255, 0),
-						color: combineRgb(0, 0, 0)
-					}
-				}
+						color: combineRgb(0, 0, 0),
+					},
+				},
 			],
 			steps: [
 				{
@@ -1441,13 +1458,13 @@ class PanasonicInstance extends InstanceBase {
 						{
 							action: Constants.ColorMatchingMode,
 							options: {
-								mode: ntcontrol.ColorMatching.OFF
-							}
-						}
+								mode: ntcontrol.ColorMatching.OFF,
+							},
+						},
 					],
-					up: []
-				}
-			]
+					up: [],
+				},
+			],
 		}
 
 		presets['Color_matching_3-colors'] = {
@@ -1458,7 +1475,7 @@ class PanasonicInstance extends InstanceBase {
 				text: 'Color matching 3-colors',
 				size: '14',
 				color: combineRgb(255, 255, 255),
-				bgcolor: combineRgb(0, 0, 0)
+				bgcolor: combineRgb(0, 0, 0),
 			},
 			feedbacks: [
 				{
@@ -1466,13 +1483,13 @@ class PanasonicInstance extends InstanceBase {
 					options: {
 						[Constants.Red]: DEFAULT_COLOR_RED,
 						[Constants.Green]: DEFAULT_COLOR_GREEN,
-						[Constants.Blue]: DEFAULT_COLOR_BLUE
+						[Constants.Blue]: DEFAULT_COLOR_BLUE,
 					},
 					style: {
 						bgcolor: combineRgb(255, 255, 0),
-						color: combineRgb(0, 0, 0)
-					}
-				}
+						color: combineRgb(0, 0, 0),
+					},
+				},
 			],
 			steps: [
 				{
@@ -1480,11 +1497,11 @@ class PanasonicInstance extends InstanceBase {
 						{
 							action: Constants.ColorMatchingMode,
 							options: {
-								mode: ntcontrol.ColorMatching['3COLORS']
-							}
-						}
+								mode: ntcontrol.ColorMatching['3COLORS'],
+							},
+						},
 					],
-					up: []
+					up: [],
 				},
 				{
 					down: [
@@ -1493,13 +1510,13 @@ class PanasonicInstance extends InstanceBase {
 							options: {
 								[Constants.Red]: DEFAULT_COLOR_RED,
 								[Constants.Green]: DEFAULT_COLOR_GREEN,
-								[Constants.Blue]: DEFAULT_COLOR_BLUE
-							}
-						}
+								[Constants.Blue]: DEFAULT_COLOR_BLUE,
+							},
+						},
 					],
-					up: []
-				}
-			]
+					up: [],
+				},
+			],
 		}
 
 		presets['Color_matching_7-colors'] = {
@@ -1510,7 +1527,7 @@ class PanasonicInstance extends InstanceBase {
 				text: 'Color matching 7-colors',
 				size: '14',
 				color: combineRgb(255, 255, 255),
-				bgcolor: combineRgb(0, 0, 0)
+				bgcolor: combineRgb(0, 0, 0),
 			},
 			feedbacks: [
 				{
@@ -1522,13 +1539,13 @@ class PanasonicInstance extends InstanceBase {
 						[Constants.Cyan]: DEFAULT_COLOR_CYAN,
 						[Constants.Magenta]: DEFAULT_COLOR_MAGNETA,
 						[Constants.Yellow]: DEFAULT_COLOR_YELLOW,
-						[Constants.White]: DEFAULT_COLOR_WHITE
+						[Constants.White]: DEFAULT_COLOR_WHITE,
 					},
 					style: {
 						bgcolor: combineRgb(255, 255, 0),
-						color: combineRgb(0, 0, 0)
-					}
-				}
+						color: combineRgb(0, 0, 0),
+					},
+				},
 			],
 			steps: [
 				{
@@ -1536,11 +1553,11 @@ class PanasonicInstance extends InstanceBase {
 						{
 							action: Constants.ColorMatchingMode,
 							options: {
-								mode: ntcontrol.ColorMatching['7COLORS']
-							}
-						}
+								mode: ntcontrol.ColorMatching['7COLORS'],
+							},
+						},
 					],
-					up: []
+					up: [],
 				},
 				{
 					down: [
@@ -1553,13 +1570,13 @@ class PanasonicInstance extends InstanceBase {
 								[Constants.Cyan]: DEFAULT_COLOR_CYAN,
 								[Constants.Magenta]: DEFAULT_COLOR_MAGNETA,
 								[Constants.Yellow]: DEFAULT_COLOR_YELLOW,
-								[Constants.White]: DEFAULT_COLOR_WHITE
-							}
-						}
+								[Constants.White]: DEFAULT_COLOR_WHITE,
+							},
+						},
 					],
-					up: []
-				}
-			]
+					up: [],
+				},
+			],
 		}
 
 		this.setPresetDefinitions(presets)
