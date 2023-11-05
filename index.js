@@ -1426,8 +1426,8 @@ class PanasonicInstance extends InstanceBase {
 						value: 100,
 					},
 					style: {
+						color: combineRgb(0, 0, 0),
 						bgcolor: combineRgb(255, 255, 0),
-						color: combineRgb(255, 255, 255),
 					},
 				},
 			],
@@ -1435,7 +1435,7 @@ class PanasonicInstance extends InstanceBase {
 				{
 					down: [
 						{
-							action: Constants.Brightness,
+							actionId: Constants.Brightness,
 							options: {
 								value: 100,
 							},
@@ -1589,7 +1589,7 @@ class PanasonicInstance extends InstanceBase {
 				{
 					down: [
 						{
-							action: Constants.ColorMatchingMode,
+							actionId: Constants.ColorMatchingMode,
 							options: {
 								mode: ntcontrol.ColorMatching.OFF,
 							},
@@ -1628,7 +1628,7 @@ class PanasonicInstance extends InstanceBase {
 				{
 					down: [
 						{
-							action: Constants.ColorMatchingMode,
+							actionId: Constants.ColorMatchingMode,
 							options: {
 								mode: ntcontrol.ColorMatching['3COLORS'],
 							},
@@ -1639,7 +1639,7 @@ class PanasonicInstance extends InstanceBase {
 				{
 					down: [
 						{
-							action: Constants.ColorMatching3Color,
+							actionId: Constants.ColorMatching3Color,
 							options: {
 								[Constants.Red]: DEFAULT_COLOR_RED,
 								[Constants.Green]: DEFAULT_COLOR_GREEN,
@@ -1684,7 +1684,7 @@ class PanasonicInstance extends InstanceBase {
 				{
 					down: [
 						{
-							action: Constants.ColorMatchingMode,
+							actionId: Constants.ColorMatchingMode,
 							options: {
 								mode: ntcontrol.ColorMatching['7COLORS'],
 							},
@@ -1695,7 +1695,7 @@ class PanasonicInstance extends InstanceBase {
 				{
 					down: [
 						{
-							action: Constants.ColorMatching7Color,
+							actionId: Constants.ColorMatching7Color,
 							options: {
 								[Constants.Red]: DEFAULT_COLOR_RED,
 								[Constants.Green]: DEFAULT_COLOR_GREEN,
