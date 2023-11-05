@@ -45,24 +45,6 @@ const EMPTY_LAMBDA = () => {
 	/* nop */
 }
 
-function foregroundPicker(defaultValue) {
-	return {
-		type: 'colorpicker',
-		label: 'Foreground color',
-		id: 'fg',
-		default: defaultValue,
-	}
-}
-
-function backgroundPicker(defaultValue) {
-	return {
-		type: 'colorpicker',
-		label: 'Background color',
-		id: 'bg',
-		default: defaultValue,
-	}
-}
-
 function rgbTextInput(id, label, defaultValue) {
 	return {
 		type: 'textinput',
@@ -823,13 +805,15 @@ class PanasonicInstance extends InstanceBase {
 		const feedbacks = {}
 
 		feedbacks[Constants.LampStatus] = {
-			type: 'advanced',
+			type: 'boolean',
 			name: 'Change background color by lamp status',
 			description:
 				'If the state of the projector lamps matches the specified value, change background color of the bank',
+			defaultStyle: {
+				color: combineRgb(0, 0, 0),
+				bgcolor: combineRgb(0, 255, 0),
+			},
 			options: [
-				foregroundPicker(combineRgb(0, 0, 0)),
-				backgroundPicker(combineRgb(0, 255, 0)),
 				{
 					type: 'dropdown',
 					label: 'Lamp state',
@@ -839,27 +823,23 @@ class PanasonicInstance extends InstanceBase {
 				},
 			],
 			callback: (feedback) => {
-				if (
+				return (
 					this.variables[Constants.LampStatus] ===
 					ntcontrol.enumValueToLabel(ntcontrol.LampControlStatus, feedback.options.state)
-				) {
-					return {
-						color: feedback.options.fg,
-						bgcolor: feedback.options.bg,
-					}
-				}
-				return {}
+				)
 			},
 		}
 
 		feedbacks[Constants.Power] = {
-			type: 'advanced',
+			type: 'boolean',
 			name: 'Change background color by power status',
 			description:
 				'If the state of the projector (power) matches the specified value, change background color of the bank',
+			defaultStyle: {
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(255, 0, 0),
+			},
 			options: [
-				foregroundPicker(combineRgb(0, 0, 0)),
-				backgroundPicker(combineRgb(255, 0, 0)),
 				{
 					type: 'dropdown',
 					label: 'Power state',
@@ -869,24 +849,20 @@ class PanasonicInstance extends InstanceBase {
 				},
 			],
 			callback: (feedback) => {
-				if (this.variables[Constants.Power] === feedback.options.state) {
-					return {
-						color: feedback.options.fg,
-						bgcolor: feedback.options.bg,
-					}
-				}
-				return {}
+				return this.variables[Constants.Power] === feedback.options.state
 			},
 		}
 
 		feedbacks[Constants.Shutter] = {
-			type: 'advanced',
+			type: 'boolean',
 			name: 'Change background color by shutter status',
 			description:
 				'If the state of the projector shutter matches the specified value, change background color of the bank',
+			defaultStyle: {
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(255, 0, 0),
+			},
 			options: [
-				foregroundPicker(combineRgb(0, 0, 0)),
-				backgroundPicker(combineRgb(255, 0, 0)),
 				{
 					type: 'dropdown',
 					label: 'Shutter state',
@@ -896,24 +872,20 @@ class PanasonicInstance extends InstanceBase {
 				},
 			],
 			callback: (feedback) => {
-				if (this.variables[Constants.Shutter] === feedback.options.state) {
-					return {
-						color: feedback.options.fg,
-						bgcolor: feedback.options.bg,
-					}
-				}
-				return {}
+				return this.variables[Constants.Shutter] === feedback.options.state
 			},
 		}
 
 		feedbacks[Constants.Freeze] = {
-			type: 'advanced',
+			type: 'boolean',
 			name: 'Change background color by freeze status',
 			description:
 				'If the state of the projector freeze matches the specified value, change background color of the bank',
+			defaultStyle: {
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(255, 0, 0),
+			},
 			options: [
-				foregroundPicker(combineRgb(0, 0, 0)),
-				backgroundPicker(combineRgb(255, 0, 0)),
 				{
 					type: 'dropdown',
 					label: 'Freeze state',
@@ -923,24 +895,20 @@ class PanasonicInstance extends InstanceBase {
 				},
 			],
 			callback: (feedback) => {
-				if (this.variables[Constants.Freeze] === feedback.options.state) {
-					return {
-						color: feedback.options.fg,
-						bgcolor: feedback.options.bg,
-					}
-				}
-				return {}
+				return this.variables[Constants.Freeze] === feedback.options.state
 			},
 		}
 
 		feedbacks[Constants.InputSource] = {
-			type: 'advanced',
+			type: 'boolean',
 			name: 'Change background color by input selection',
 			description:
 				'If the selected input of the projector matches the specified value, change background color of the bank',
+			defaultStyle: {
+				color: combineRgb(0, 0, 0),
+				bgcolor: combineRgb(255, 255, 0),
+			},
 			options: [
-				foregroundPicker(combineRgb(0, 0, 0)),
-				backgroundPicker(combineRgb(255, 255, 0)),
 				{
 					type: 'dropdown',
 					label: 'Input',
@@ -950,24 +918,20 @@ class PanasonicInstance extends InstanceBase {
 				},
 			],
 			callback: (feedback) => {
-				if (this.variables[Constants.InputSource] === feedback.options[Constants.InputSource]) {
-					return {
-						color: feedback.options.fg,
-						bgcolor: feedback.options.bg,
-					}
-				}
-				return {}
+				return this.variables[Constants.InputSource] === feedback.options[Constants.InputSource]
 			},
 		}
 
 		feedbacks[Constants.TestPattern] = {
-			type: 'advanced',
+			type: 'boolean',
 			name: 'Change background color by current test pattern',
 			description:
 				'If the current test pattern of the projector matches the specified value, change background color of the bank',
+			defaultStyle: {
+				color: combineRgb(0, 0, 0),
+				bgcolor: combineRgb(255, 255, 0),
+			},
 			options: [
-				foregroundPicker(combineRgb(0, 0, 0)),
-				backgroundPicker(combineRgb(255, 255, 0)),
 				{
 					type: 'dropdown',
 					label: 'Test pattern',
@@ -977,24 +941,20 @@ class PanasonicInstance extends InstanceBase {
 				},
 			],
 			callback: (feedback) => {
-				if (ntcontrol.TestPattern[this.variables[Constants.TestPattern]] === feedback.options[Constants.TestPattern]) {
-					return {
-						color: feedback.options.fg,
-						bgcolor: feedback.options.bg,
-					}
-				}
-				return {}
+				return ntcontrol.TestPattern[this.variables[Constants.TestPattern]] === feedback.options[Constants.TestPattern]
 			},
 		}
 
 		feedbacks[Constants.PictureMode] = {
-			type: 'advanced',
+			type: 'boolean',
 			name: 'Change background color by current picture mode',
 			description:
 				'If the current picture mode of the projector matches the specified value, change background color of the bank',
+			defaultStyle: {
+				color: combineRgb(0, 0, 0),
+				bgcolor: combineRgb(255, 255, 0),
+			},
 			options: [
-				foregroundPicker(combineRgb(0, 0, 0)),
-				backgroundPicker(combineRgb(255, 255, 0)),
 				{
 					type: 'dropdown',
 					label: 'Picture Mode',
@@ -1004,24 +964,20 @@ class PanasonicInstance extends InstanceBase {
 				},
 			],
 			callback: (feedback) => {
-				if (ntcontrol.PictureMode[this.variables[Constants.PictureMode]] === feedback.options[Constants.PictureMode]) {
-					return {
-						color: feedback.options.fg,
-						bgcolor: feedback.options.bg,
-					}
-				}
-				return {}
+				return ntcontrol.PictureMode[this.variables[Constants.PictureMode]] === feedback.options[Constants.PictureMode]
 			},
 		}
 
 		feedbacks[Constants.ColorMatchingMode] = {
-			type: 'advanced',
+			type: 'boolean',
 			name: 'Change background color by current color matching mode',
 			description:
 				'If the current color matching mode matches the specified value, change background color of the bank',
+			defaultStyle: {
+				color: combineRgb(0, 0, 0),
+				bgcolor: combineRgb(255, 255, 0),
+			},
 			options: [
-				foregroundPicker(combineRgb(0, 0, 0)),
-				backgroundPicker(combineRgb(255, 255, 0)),
 				{
 					type: 'dropdown',
 					label: 'Color matching mode',
@@ -1031,52 +987,44 @@ class PanasonicInstance extends InstanceBase {
 				},
 			],
 			callback: (feedback) => {
-				if (ntcontrol.ColorMatching[this.variables[Constants.ColorMatchingMode]] === feedback.options.mode) {
-					return {
-						color: feedback.options.fg,
-						bgcolor: feedback.options.bg,
-					}
-				}
-				return {}
+				return ntcontrol.ColorMatching[this.variables[Constants.ColorMatchingMode]] === feedback.options.mode
 			},
 		}
 
 		feedbacks[Constants.ColorMatching3Color] = {
-			type: 'advanced',
+			type: 'boolean',
 			name: 'Change background color by current color values for 3 color matching mode',
 			description:
 				'If the current color values for 3 color matching mode matches the specified value, change background color of the bank',
+			defaultStyle: {
+				color: combineRgb(0, 0, 0),
+				bgcolor: combineRgb(255, 255, 0),
+			},
 			options: [
-				foregroundPicker(combineRgb(0, 0, 0)),
-				backgroundPicker(combineRgb(255, 255, 0)),
 				rgbTextInput(Constants.Red, 'Red', DEFAULT_COLOR_RED),
 				rgbTextInput(Constants.Green, 'Green', DEFAULT_COLOR_GREEN),
 				rgbTextInput(Constants.Blue, 'Blue', DEFAULT_COLOR_BLUE),
 			],
 			callback: (feedback) => {
-				if (
+				return (
 					ntcontrol.ColorMatching[this.variables[Constants.ColorMatchingMode]] === ntcontrol.ColorMatching['3COLORS'] &&
 					this.variables[Constants.ColorMatching3Color + '_' + Constants.Red] === feedback.options[Constants.Red] &&
 					this.variables[Constants.ColorMatching3Color + '_' + Constants.Green] === feedback.options[Constants.Green] &&
 					this.variables[Constants.ColorMatching3Color + '_' + Constants.Blue] === feedback.options[Constants.Blue]
-				) {
-					return {
-						color: feedback.options.fg,
-						bgcolor: feedback.options.bg,
-					}
-				}
-				return {}
+				)
 			},
 		}
 
 		feedbacks[Constants.ColorMatching7Color] = {
-			type: 'advanced',
+			type: 'boolean',
 			name: 'Change background color by current color values for 7 color matching mode',
 			description:
 				'If the current color values for 7 color matching mode matches the specified value, change background color of the bank',
+			defaultStyle: {
+				color: combineRgb(0, 0, 0),
+				bgcolor: combineRgb(255, 255, 0),
+			},
 			options: [
-				foregroundPicker(combineRgb(0, 0, 0)),
-				backgroundPicker(combineRgb(255, 255, 0)),
 				rgbTextInput(Constants.Red, 'Red', DEFAULT_COLOR_RED),
 				rgbTextInput(Constants.Green, 'Green', DEFAULT_COLOR_GREEN),
 				rgbTextInput(Constants.Blue, 'Blue', DEFAULT_COLOR_BLUE),
@@ -1086,7 +1034,7 @@ class PanasonicInstance extends InstanceBase {
 				rgbTextInput(Constants.White, 'White', DEFAULT_COLOR_WHITE),
 			],
 			callback: (feedback) => {
-				if (
+				return (
 					ntcontrol.ColorMatching[this.variables[Constants.ColorMatchingMode]] === ntcontrol.ColorMatching['7COLORS'] &&
 					this.variables[Constants.ColorMatching7Color + '_' + Constants.Red] === feedback.options[Constants.Red] &&
 					this.variables[Constants.ColorMatching7Color + '_' + Constants.Green] === feedback.options[Constants.Green] &&
@@ -1097,24 +1045,20 @@ class PanasonicInstance extends InstanceBase {
 					this.variables[Constants.ColorMatching7Color + '_' + Constants.Yellow] ===
 						feedback.options[Constants.Yellow] &&
 					this.variables[Constants.ColorMatching7Color + '_' + Constants.White] === feedback.options[Constants.White]
-				) {
-					return {
-						color: feedback.options.fg,
-						bgcolor: feedback.options.bg,
-					}
-				}
-				return {}
+				)
 			},
 		}
 
 		feedbacks[Constants.Brightness] = {
-			type: 'advanced',
+			type: 'boolean',
 			name: 'Change background color by current brightness',
 			description:
 				'If the current brightness of the projector matches the specified value, change background color of the bank',
+			defaultStyle: {
+				color: combineRgb(0, 0, 0),
+				bgcolor: combineRgb(255, 255, 0),
+			},
 			options: [
-				foregroundPicker(combineRgb(0, 0, 0)),
-				backgroundPicker(combineRgb(255, 255, 0)),
 				{
 					type: 'number',
 					label: 'Brightness',
@@ -1127,13 +1071,7 @@ class PanasonicInstance extends InstanceBase {
 				},
 			],
 			callback: (feedback) => {
-				if (this.variables[Constants.Brightness] === feedback.options.value) {
-					return {
-						color: feedback.options.fg,
-						bgcolor: feedback.options.bg,
-					}
-				}
-				return {}
+				return this.variables[Constants.Brightness] === feedback.options.value
 			},
 		}
 
@@ -1315,8 +1253,8 @@ class PanasonicInstance extends InstanceBase {
 						state: Constants.On,
 					},
 					style: {
-						bgcolor: combineRgb(255, 0, 0),
 						color: combineRgb(255, 255, 255),
+						bgcolor: combineRgb(255, 0, 0),
 					},
 				},
 			],
@@ -1352,8 +1290,8 @@ class PanasonicInstance extends InstanceBase {
 						state: Constants.On,
 					},
 					style: {
-						bgcolor: combineRgb(255, 0, 0),
 						color: combineRgb(255, 255, 255),
+						bgcolor: combineRgb(255, 0, 0),
 					},
 				},
 			],
@@ -1389,8 +1327,8 @@ class PanasonicInstance extends InstanceBase {
 						state: Constants.On,
 					},
 					style: {
-						bgcolor: combineRgb(255, 0, 0),
 						color: combineRgb(255, 255, 255),
+						bgcolor: combineRgb(255, 0, 0),
 					},
 				},
 			],
@@ -1580,8 +1518,8 @@ class PanasonicInstance extends InstanceBase {
 						state: ntcontrol.ColorMatching.OFF,
 					},
 					style: {
-						bgcolor: combineRgb(255, 255, 0),
 						color: combineRgb(0, 0, 0),
+						bgcolor: combineRgb(255, 255, 0),
 					},
 				},
 			],
@@ -1619,8 +1557,8 @@ class PanasonicInstance extends InstanceBase {
 						[Constants.Blue]: DEFAULT_COLOR_BLUE,
 					},
 					style: {
-						bgcolor: combineRgb(255, 255, 0),
 						color: combineRgb(0, 0, 0),
+						bgcolor: combineRgb(255, 255, 0),
 					},
 				},
 			],
@@ -1675,8 +1613,8 @@ class PanasonicInstance extends InstanceBase {
 						[Constants.White]: DEFAULT_COLOR_WHITE,
 					},
 					style: {
-						bgcolor: combineRgb(255, 255, 0),
 						color: combineRgb(0, 0, 0),
+						bgcolor: combineRgb(255, 255, 0),
 					},
 				},
 			],
@@ -1715,4 +1653,5 @@ class PanasonicInstance extends InstanceBase {
 		this.setPresetDefinitions(presets)
 	}
 }
+
 runEntrypoint(PanasonicInstance, UpgradeScripts)
