@@ -294,15 +294,15 @@ class PanasonicInstance extends InstanceBase {
 			callback: (action) => {
 				this.sendValue(
 					ntcontrol.ColorMatching3ColorsRedCommand,
-					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Red])
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Red]),
 				)
 				this.sendValue(
 					ntcontrol.ColorMatching3ColorsGreenCommand,
-					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Green])
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Green]),
 				)
 				this.sendValue(
 					ntcontrol.ColorMatching3ColorsBlueCommand,
-					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Blue])
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Blue]),
 				)
 			},
 		}
@@ -321,31 +321,31 @@ class PanasonicInstance extends InstanceBase {
 			callback: (action) => {
 				this.sendValue(
 					ntcontrol.ColorMatching7ColorsRedCommand,
-					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Red])
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Red]),
 				)
 				this.sendValue(
 					ntcontrol.ColorMatching7ColorsGreenCommand,
-					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Green])
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Green]),
 				)
 				this.sendValue(
 					ntcontrol.ColorMatching7ColorsBlueCommand,
-					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Blue])
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Blue]),
 				)
 				this.sendValue(
 					ntcontrol.ColorMatching7ColorsCyanCommand,
-					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Cyan])
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Cyan]),
 				)
 				this.sendValue(
 					ntcontrol.ColorMatching7ColorsMagentaCommand,
-					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Magenta])
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Magenta]),
 				)
 				this.sendValue(
 					ntcontrol.ColorMatching7ColorsYellowCommand,
-					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Yellow])
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.Yellow]),
 				)
 				this.sendValue(
 					ntcontrol.ColorMatching7ColorsWhiteCommand,
-					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.White])
+					ntcontrol.DefaultRgbConverter.parse(action.options[Constants.White]),
 				)
 			},
 		}
@@ -379,7 +379,7 @@ class PanasonicInstance extends InstanceBase {
 			],
 			callback: (action) => {
 				this.sendValue(ntcontrol.LensMemoryLoadCommand, action.options[Constants.LensMemory])
-			}
+			},
 		}
 
 		actions[Constants.PictureMode] = {
@@ -760,7 +760,7 @@ class PanasonicInstance extends InstanceBase {
 		})
 		obj.on(ntcontrol.Projector.Events.STATE_CHANGE, this.stateChangeHandler.bind(this))
 		this.log('debug', `Use feedback: ${this.config.feedback}`)
-		if (this.config.feedback !=='no') {
+		if (this.config.feedback !== 'no') {
 			this.config.feedback = 'yes'
 			obj.addMonitoring(ntcontrol.BrightnessControlCommand)
 			obj.addMonitoring(ntcontrol.TestPatternCommand)
