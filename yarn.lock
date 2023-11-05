@@ -2153,10 +2153,10 @@ npm-run-path@^5.1.0:
   dependencies:
     path-key "^4.0.0"
 
-ntcontrol-connection@^0.3.1:
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/ntcontrol-connection/-/ntcontrol-connection-0.3.1.tgz#76ea547f127cb1aa6914efae382da5e85e2c716e"
-  integrity sha512-ezNKU74NnRR0C1pk0qSzTa9mGXMQZ326Gr9vaBUUPJf/2uSSPfygHbTsnimpAUei2t5bJmnQw4+jvHEnV/8ApA==
+ntcontrol-connection@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/ntcontrol-connection/-/ntcontrol-connection-0.4.0.tgz#162bdc7ce780147d9ca32e2c9ca4149efd860014"
+  integrity sha512-hCoWJGEDgykNCPQSN1i33tvW1olakWp+yDDQCXwdVTugGubjl1WXBhLjAJel1wwEjLBcam85d8Hlj3JbJpgAnw==
   dependencies:
     tslib "^2.6.2"
 
