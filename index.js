@@ -28,6 +28,7 @@ const Constants = {
 	LensMemory: 'lens_mem',
 	LoadLensMemory: 'load_lens_mem',
 	PictureMode: 'picture_mode',
+	QuadPixelDrive: 'quad_pixel_drive',
 	On: 'on',
 	Off: 'off',
 	Toggle: 'toggle',
@@ -394,6 +395,22 @@ class PanasonicInstance extends InstanceBase {
 			],
 			callback: (action) => {
 				this.sendValue(ntcontrol.PictureModeCommand, action.options[Constants.PictureMode])
+			},
+		}
+
+		actions[Constants.QuadPixelDrive] = {
+			name: 'Turn the Quad Pixel Drive feature on/off',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Value',
+					id: 'value',
+					default: Constants.On,
+					choices: this.choiceOnOff,
+				},
+			],
+			callback: (action) => {
+				this.sendValue(ntcontrol.QuadPixelDriveCommand, action.options.value === Constants.On)
 			},
 		}
 
