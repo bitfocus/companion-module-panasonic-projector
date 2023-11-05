@@ -27,6 +27,7 @@ const Constants = {
 	LampStatus: 'lamp_state',
 	LensMemory: 'lens_mem',
 	LoadLensMemory: 'load_lens_mem',
+	PictureMode: 'picture_mode',
 	On: 'on',
 	Off: 'off',
 	Toggle: 'toggle',
@@ -112,6 +113,7 @@ class PanasonicInstance extends InstanceBase {
 		this.choiceGridMode = this.buildList(ntcontrol.DisplayGridLines)
 		this.choiceLampState = this.buildList(ntcontrol.LampControlStatus)
 		this.choiceLensMemory = this.buildList(ntcontrol.LensMemory)
+		this.choicePictureMode = this.buildList(ntcontrol.PictureMode)
 
 		this.choiceOnOff = [
 			{ id: Constants.On, label: Constants.On },
@@ -348,7 +350,7 @@ class PanasonicInstance extends InstanceBase {
 		}
 
 		actions[Constants.TestPattern] = {
-			name: 'Change The Test Pattern',
+			name: 'Change the Test Pattern',
 			options: [
 				{
 					type: 'dropdown',
@@ -359,7 +361,7 @@ class PanasonicInstance extends InstanceBase {
 				},
 			],
 			callback: (action) => {
-				this.sendValue(ntcontrol.TestPatternCommand, action.options.test_pattern)
+				this.sendValue(ntcontrol.TestPatternCommand, action.options[Constants.TestPattern])
 			},
 		}
 
@@ -377,6 +379,22 @@ class PanasonicInstance extends InstanceBase {
 			callback: (action) => {
 				this.sendValue(ntcontrol.LensMemoryLoadCommand, action.options[Constants.LensMemory])
 			}
+		}
+
+		actions[Constants.PictureMode] = {
+			name: 'Change the picture mode',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Picture Mode',
+					id: Constants.PictureMode,
+					default: ntcontrol.PictureMode.STANDARD,
+					choices: this.choicePictureMode,
+				},
+			],
+			callback: (action) => {
+				this.sendValue(ntcontrol.PictureModeCommand, action.options[Constants.PictureMode])
+			},
 		}
 
 		// TODO: Should work, but needs testing with a projector with activated upgrade kit
@@ -594,6 +612,12 @@ class PanasonicInstance extends InstanceBase {
 				})
 				this.checkFeedbacks(Constants.TestPattern)
 				break
+			case 'PictureMode':
+				this.setVariableValuesAndState({
+					[Constants.PictureMode]: ntcontrol.enumValueToLabel(ntcontrol.PictureMode, value),
+				})
+				this.checkFeedbacks(Constants.PictureMode)
+				break
 			case 'ColorMatching':
 				this.setVariableValuesAndState({
 					[Constants.ColorMatchingMode]: ntcontrol.enumValueToLabel(ntcontrol.ColorMatching, value),
@@ -724,6 +748,7 @@ class PanasonicInstance extends InstanceBase {
 			obj.addMonitoring(ntcontrol.BrightnessControlCommand)
 			obj.addMonitoring(ntcontrol.TestPatternCommand)
 			obj.addMonitoring(ntcontrol.ColorMatchingCommand)
+			obj.addMonitoring(ntcontrol.PictureModeCommand)
 		}
 		return obj
 	}
@@ -945,6 +970,33 @@ class PanasonicInstance extends InstanceBase {
 			},
 		}
 
+		feedbacks[Constants.PictureMode] = {
+			type: 'advanced',
+			name: 'Change background color by current picture mode',
+			description:
+				'If the current picture mode of the projector matches the specified value, change background color of the bank',
+			options: [
+				foregroundPicker(combineRgb(0, 0, 0)),
+				backgroundPicker(combineRgb(255, 255, 0)),
+				{
+					type: 'dropdown',
+					label: 'Picture Mode',
+					id: Constants.PictureMode,
+					default: ntcontrol.PictureMode.STANDARD,
+					choices: this.choicePictureMode,
+				},
+			],
+			callback: (feedback) => {
+				if (ntcontrol.PictureMode[this.variables[Constants.PictureMode]] === feedback.options[Constants.PictureMode]) {
+					return {
+						color: feedback.options.fg,
+						bgcolor: feedback.options.bg,
+					}
+				}
+				return {}
+			},
+		}
+
 		feedbacks[Constants.ColorMatchingMode] = {
 			type: 'advanced',
 			name: 'Change background color by current color matching mode',
@@ -1147,6 +1199,11 @@ class PanasonicInstance extends InstanceBase {
 		})
 
 		variables.push({
+			name: 'Picture Mode',
+			variableId: Constants.PictureMode,
+		})
+
+		variables.push({
 			name: 'Color Matching 3-Colors: Red',
 			variableId: Constants.ColorMatching3Color + '_' + Constants.Red,
 		})
@@ -1204,6 +1261,7 @@ class PanasonicInstance extends InstanceBase {
 			[Constants.LampStatus]: undefined,
 			[Constants.ColorMatchingMode]: ntcontrol.ColorMatching.Off,
 			[Constants.TestPattern]: ntcontrol.TestPattern.Off,
+			[Constants.PictureMode]: ntcontrol.PictureMode.STANDARD,
 			[Constants.Freeze]: undefined,
 			[Constants.Brightness]: 100,
 			[Constants.InputSource]: '',
@@ -1440,6 +1498,45 @@ class PanasonicInstance extends InstanceBase {
 								actionId: Constants.TestPattern,
 								options: {
 									[Constants.TestPattern]: pattern.id,
+								},
+							},
+						],
+						up: [],
+					},
+				],
+			}
+		}
+
+		for (let mode of this.choicePictureMode) {
+			presets[`Selection_of_picture_mode_${mode.label}`] = {
+				type: 'button',
+				category: 'Picture Mode',
+				name: 'Selection of picture mode ' + mode.label,
+				style: {
+					text: 'Picture Mode\\n' + (mode.label || ''),
+					size: '14',
+					color: combineRgb(255, 255, 255),
+					bgcolor: combineRgb(0, 0, 0),
+				},
+				feedbacks: [
+					{
+						feedbackId: Constants.PictureMode,
+						options: {
+							[Constants.PictureMode]: mode.id,
+						},
+						style: {
+							bgcolor: combineRgb(255, 255, 0),
+							color: combineRgb(0, 0, 0),
+						},
+					},
+				],
+				steps: [
+					{
+						down: [
+							{
+								actionId: Constants.PictureMode,
+								options: {
+									[Constants.PictureMode]: mode.id,
 								},
 							},
 						],
