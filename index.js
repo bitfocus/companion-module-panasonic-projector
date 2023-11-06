@@ -275,7 +275,7 @@ class PanasonicInstance extends InstanceBase {
 					type: 'dropdown',
 					label: 'Color Matching',
 					id: 'mode',
-					default: ntcontrol.ColorMatching.Off,
+					default: ntcontrol.ColorMatching.OFF,
 					choices: this.choiceColorMatching,
 				},
 			],
