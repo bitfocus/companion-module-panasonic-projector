@@ -28,6 +28,7 @@ const Constants = {
 	LensMemory: 'lens_mem',
 	LoadLensMemory: 'load_lens_mem',
 	PictureMode: 'picture_mode',
+	ZoomBoth: 'zoom_both',
 	QuadPixelDrive: 'quad_pixel_drive',
 	On: 'on',
 	Off: 'off',
@@ -380,6 +381,25 @@ class PanasonicInstance extends InstanceBase {
 			},
 		}
 
+		actions[Constants.ZoomBoth] = {
+			name: 'Change Digital Zoom (ZoomBoth)',
+			options: [
+				{
+					type: 'number',
+					label: 'Zoom (Both)',
+					id: 'value',
+					min: 50,
+					max: 999,
+					default: 999,
+					required: true,
+					range: true,
+				},
+			],
+			callback: (action) => {
+				this.sendValue(ntcontrol.ZoomBothCommand, action.options.value)
+			},
+		}
+
 		actions[Constants.QuadPixelDrive] = {
 			name: 'Turn the Quad Pixel Drive feature on/off',
 			options: [
@@ -616,6 +636,10 @@ class PanasonicInstance extends InstanceBase {
 					[Constants.PictureMode]: ntcontrol.enumValueToLabel(ntcontrol.PictureMode, value),
 				})
 				this.checkFeedbacks(Constants.PictureMode)
+				break
+			case 'ZoomBoth':
+				this.setVariableValuesAndState({ [Constants.ZoomBoth]: value })
+				this.checkFeedbacks(Constants.ZoomBoth)
 				break
 			case 'ColorMatching':
 				this.setVariableValuesAndState({
@@ -1159,6 +1183,11 @@ class PanasonicInstance extends InstanceBase {
 		})
 
 		variables.push({
+			name: 'Digital Zoom: ZoomBoth',
+			variableId: Constants.ZoomBoth,
+		})
+
+		variables.push({
 			name: 'Color Matching 3-Colors: Red',
 			variableId: Constants.ColorMatching3Color + '_' + Constants.Red,
 		})
@@ -1217,6 +1246,7 @@ class PanasonicInstance extends InstanceBase {
 			[Constants.ColorMatchingMode]: ntcontrol.ColorMatching.Off,
 			[Constants.TestPattern]: ntcontrol.TestPattern.Off,
 			[Constants.PictureMode]: ntcontrol.PictureMode.STANDARD,
+			[Constants.ZoomBoth]: 100,
 			[Constants.Freeze]: undefined,
 			[Constants.Brightness]: 100,
 			[Constants.InputSource]: '',
