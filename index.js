@@ -463,15 +463,16 @@ class PanasonicInstance extends InstanceBase {
 	 * @access public
 	 * @since 1.0.0
 	 */
+
 	getConfigFields() {
 		return [
 			{
-				type: 'text',
+				type: 'static-text',
 				id: 'info',
 				width: 12,
 				label: 'Information',
 				value: 'This module will connect to any supported Panasonic projector device.',
-			},
+			},		
 			{
 				type: 'textinput',
 				id: 'host',
