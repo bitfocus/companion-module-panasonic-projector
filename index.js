@@ -756,7 +756,8 @@ class PanasonicInstance extends InstanceBase {
 	sendValue(cmd, value) {
 		if (this.projector !== undefined) {
 			try {
-				this.projector.sendValue(cmd, value).then(EMPTY_LAMBDA, (err) => this.log('error', err.message || err))
+				const responseHandler = (cmd.parseResponse && cmd.label) ? v => this.stateChangeHandler(cmd.label, cmd.parseResponse(v)) : EMPTY_LAMBDA
+				this.projector.sendValue(cmd, value).then(responseHandler, (err) => this.log('error', err.message || err))
 			} catch (e) {
 				this.log('error', e)
 			}
