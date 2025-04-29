@@ -29,6 +29,7 @@ const Constants = {
 	LoadLensMemory: 'load_lens_mem',
 	PictureMode: 'picture_mode',
 	QuadPixelDrive: 'quad_pixel_drive',
+	OperatingMode: 'operating_mode',
 	On: 'on',
 	Off: 'off',
 	Toggle: 'toggle',
@@ -97,6 +98,7 @@ class PanasonicInstance extends InstanceBase {
 		this.choiceLampState = this.buildList(ntcontrol.LampControlStatus)
 		this.choiceLensMemory = this.buildList(ntcontrol.LensMemory)
 		this.choicePictureMode = this.buildList(ntcontrol.PictureMode)
+		this.choiceOperatingMode = this.buildList(ntcontrol.OperatingMode)
 
 		this.choiceOnOff = [
 			{ id: Constants.On, label: Constants.On },
@@ -453,6 +455,22 @@ class PanasonicInstance extends InstanceBase {
 			},
 		}
 
+		actions[Constants.OperatingMode] = {
+			name: 'Change the operating mode',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Operating Mode',
+					id: Constants.OperatingMode,
+					default: ntcontrol.OperatingMode.NORMAL,
+					choices: this.choiceOperatingMode,
+				},
+			],
+			callback: (action) => {
+				this.sendValue(ntcontrol.OperatingModeCommand, action.options[Constants.OperatingMode])
+			},
+		}
+
 		this.setActionDefinitions(actions)
 	}
 
@@ -625,6 +643,12 @@ class PanasonicInstance extends InstanceBase {
 				this.handleColorMatchingChanged(value)
 				this.checkFeedbacks(Constants.ColorMatchingMode, Constants.ColorMatching3Color, Constants.ColorMatching7Color)
 				break
+			case 'OperatingMode':
+					this.setVariableValuesAndState({
+						[Constants.OperatingMode]: ntcontrol.enumValueToLabel(ntcontrol.OperatingMode, value),
+					})
+					this.checkFeedbacks(Constants.OperatingMode)
+					break
 			default:
 				var matches = /^ColorMatching(\d)Colors(Red|Green|Blue|Cyan|Magenta|Yellow|White)$/.exec(field)
 				if (matches.length === 3) {
@@ -749,6 +773,7 @@ class PanasonicInstance extends InstanceBase {
 			obj.addMonitoring(ntcontrol.TestPatternCommand)
 			obj.addMonitoring(ntcontrol.ColorMatchingCommand)
 			obj.addMonitoring(ntcontrol.PictureModeCommand)
+			obj.addMonitoring(ntcontrol.OperatingModeCommand)
 		}
 		return obj
 	}
@@ -1076,6 +1101,29 @@ class PanasonicInstance extends InstanceBase {
 			},
 		}
 
+		feedbacks[Constants.OperatingMode] = {
+			type: 'boolean',
+			name: 'Change background color by current operating mode',
+			description:
+				'If the current operating mode of the projector matches the specified value, change background color of the bank',
+			defaultStyle: {
+				color: combineRgb(0, 0, 0),
+				bgcolor: combineRgb(255, 255, 0),
+			},
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Operating Mode',
+					id: Constants.OperatingMode,
+					default: ntcontrol.OperatingMode.NORMAL,
+					choices: this.choiceOperatingMode,
+				},
+			],
+			callback: (feedback) => {
+				return ntcontrol.OperatingMode[this.variables[Constants.OperatingMode]] === feedback.options[Constants.OperatingMode]
+			},
+		}
+
 		this.setFeedbackDefinitions(feedbacks)
 	}
 
@@ -1209,6 +1257,11 @@ class PanasonicInstance extends InstanceBase {
 			variableId: Constants.ColorMatching7Color + '_' + Constants.White,
 		})
 
+		variables.push({
+			name: 'Operating Mode',
+			variableId: Constants.OperatingMode,
+		})
+
 		this.setDefaultValues3Color()
 		this.setDefaultValues7Color()
 
@@ -1223,6 +1276,7 @@ class PanasonicInstance extends InstanceBase {
 			[Constants.InputSource]: '',
 			[Constants.Power]: undefined,
 			[Constants.Shutter]: undefined,
+			[Constants.OperatingMode]: ntcontrol.OperatingMode.NORMAL,
 			name: '',
 			model: '',
 		})
@@ -1649,6 +1703,45 @@ class PanasonicInstance extends InstanceBase {
 					up: [],
 				},
 			],
+		}
+
+		for (let mode of this.choiceOperatingMode) {
+			presets[`Selection_of_operating_mode_${mode.label.replace(' ', '_')}`] = {
+				type: 'button',
+				category: 'Operating Mode',
+				name: 'Selection of operating mode ' + mode.label,
+				style: {
+					text: 'Op. Mode\\n' + (mode.label || ''),
+					size: '14',
+					color: combineRgb(255, 255, 255),
+					bgcolor: combineRgb(0, 0, 0),
+				},
+				feedbacks: [
+					{
+						feedbackId: Constants.OperatingMode,
+						options: {
+							[Constants.OperatingMode]: mode.id,
+						},
+						style: {
+							bgcolor: combineRgb(255, 255, 0),
+							color: combineRgb(0, 0, 0),
+						},
+					},
+				],
+				steps: [
+					{
+						down: [
+							{
+								actionId: Constants.OperatingMode,
+								options: {
+									[Constants.OperatingMode]: mode.id,
+								},
+							},
+						],
+						up: [],
+					},
+				],
+			}
 		}
 
 		this.setPresetDefinitions(presets)
