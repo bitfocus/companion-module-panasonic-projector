@@ -31,6 +31,8 @@ const Constants = {
 	ZoomBoth: 'zoom_both',
 	QuadPixelDrive: 'quad_pixel_drive',
 	OperatingMode: 'operating_mode',
+	FocusNear: 'focus_near',
+	FocusFar: 'focus_far',
 	On: 'on',
 	Off: 'off',
 	Toggle: 'toggle',
@@ -100,6 +102,7 @@ class PanasonicInstance extends InstanceBase {
 		this.choiceLensMemory = this.buildList(ntcontrol.LensMemory)
 		this.choicePictureMode = this.buildList(ntcontrol.PictureMode)
 		this.choiceOperatingMode = this.buildList(ntcontrol.OperatingMode)
+		this.choiceActionSpeed = this.buildList(ntcontrol.ActionSpeed)
 
 		this.choiceOnOff = [
 			{ id: Constants.On, label: Constants.On },
@@ -488,6 +491,46 @@ class PanasonicInstance extends InstanceBase {
 			],
 			callback: (action) => {
 				this.sendValue(ntcontrol.OperatingModeCommand, action.options[Constants.OperatingMode])
+			},
+		}
+
+		actions[Constants.FocusNear] = {
+			name: 'Focus Near',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Speed',
+					id: 'speed',
+					default: ntcontrol.ActionSpeed['NORMAL+'],
+					choices: [
+						{ id: ntcontrol.ActionSpeed['SLOW+'], label: 'Slow' },
+						{ id: ntcontrol.ActionSpeed['NORMAL+'], label: 'Normal' },
+						{ id: ntcontrol.ActionSpeed['FAST+'], label: 'Fast' },
+					],
+				},
+			],
+			callback: (action) => {
+				this.sendValue(ntcontrol.LensFocusCommand, action.options.speed)
+			},
+		}
+
+		actions[Constants.FocusFar] = {
+			name: 'Focus Far',
+			options: [
+				{
+					type: 'dropdown',
+					label: 'Speed',
+					id: 'speed',
+					default: ntcontrol.ActionSpeed['NORMAL-'],
+					choices: [
+						{ id: ntcontrol.ActionSpeed['SLOW-'], label: 'Slow' },
+						{ id: ntcontrol.ActionSpeed['NORMAL-'], label: 'Normal' },
+						{ id: ntcontrol.ActionSpeed['FAST-'], label: 'Fast' },
+					],
+				},
+			],
+			callback: (action) => {
+				this.sendValue(ntcontrol.LensFocusCommand, action.options.speed)
 			},
 		}
 
@@ -1773,6 +1816,56 @@ class PanasonicInstance extends InstanceBase {
 					},
 				],
 			}
+		}
+
+		presets['Focus_Near'] = {
+			type: 'button',
+			category: 'Focus Control',
+			name: 'Focus Near',
+			style: {
+				text: 'Focus Near',
+				size: '18',
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 128),
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: Constants.FocusNear,
+							options: {
+								speed: ntcontrol.ActionSpeed['NORMAL+'],
+							},
+						},
+					],
+					up: [],
+				},
+			],
+		}
+
+		presets['Focus_Far'] = {
+			type: 'button',
+			category: 'Focus Control',
+			name: 'Focus Far',
+			style: {
+				text: 'Focus Far',
+				size: '18',
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(128, 0, 0),
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: Constants.FocusFar,
+							options: {
+								speed: ntcontrol.ActionSpeed['NORMAL-'],
+							},
+						},
+					],
+					up: [],
+				},
+			],
 		}
 
 		this.setPresetDefinitions(presets)
