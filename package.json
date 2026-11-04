@@ -4,7 +4,7 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist --ignore-pattern pkg",
+		"lint:raw": "eslint",
 		"lint": "yarn lint:raw ."
 	},
 	"repository": {
@@ -13,12 +13,12 @@
 	},
 	"license": "MIT",
 	"dependencies": {
-		"@companion-module/base": "^1.12.1",
+		"@companion-module/base": "~1.15.0",
 		"ntcontrol-connection": "^0.5.0"
 	},
 	"devDependencies": {
-		"@companion-module/tools": "^2.3.0",
-		"eslint": "^8.53.0",
+		"@companion-module/tools": "^2.9.0",
+		"eslint": "^9.36.0",
 		"eslint-config-standard": "^17.1.0",
 		"eslint-plugin-import": "^2.18.2",
 		"eslint-plugin-n": "^16.0.0",
@@ -28,5 +28,8 @@
 		"eslint-plugin-standard": "^5.0.0",
 		"prettier": "^3.0.3"
 	},
-	"packageManager": "yarn@4.9.2+sha512.1fc009bc09d13cfd0e19efa44cbfc2b9cf6ca61482725eb35bbc5e257e093ebf4130db6dfe15d604ff4b79efd8e1e8e99b25fa7d0a6197c9f9826358d4d65c3c"
+	"packageManager": "yarn@4.9.2+sha512.1fc009bc09d13cfd0e19efa44cbfc2b9cf6ca61482725eb35bbc5e257e093ebf4130db6dfe15d604ff4b79efd8e1e8e99b25fa7d0a6197c9f9826358d4d65c3c",
+	"engines": {
+		"node": "^26.5"
+	}
 }
