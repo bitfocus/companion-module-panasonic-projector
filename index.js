@@ -553,7 +553,7 @@ class PanasonicInstance extends InstanceBase {
 				width: 12,
 				label: 'Information',
 				value: 'This module will connect to any supported Panasonic projector device.',
-			},		
+			},
 			{
 				type: 'textinput',
 				id: 'host',
@@ -711,11 +711,11 @@ class PanasonicInstance extends InstanceBase {
 				this.checkFeedbacks(Constants.ColorMatchingMode, Constants.ColorMatching3Color, Constants.ColorMatching7Color)
 				break
 			case 'OperatingMode':
-					this.setVariableValuesAndState({
-						[Constants.OperatingMode]: ntcontrol.enumValueToLabel(ntcontrol.OperatingMode, value),
-					})
-					this.checkFeedbacks(Constants.OperatingMode)
-					break
+				this.setVariableValuesAndState({
+					[Constants.OperatingMode]: ntcontrol.enumValueToLabel(ntcontrol.OperatingMode, value),
+				})
+				this.checkFeedbacks(Constants.OperatingMode)
+				break
 			default:
 				var matches = /^ColorMatching(\d)Colors(Red|Green|Blue|Cyan|Magenta|Yellow|White)$/.exec(field)
 				if (matches.length === 3) {
@@ -799,7 +799,10 @@ class PanasonicInstance extends InstanceBase {
 	sendValue(cmd, value) {
 		if (this.projector !== undefined) {
 			try {
-				const responseHandler = (cmd.parseResponse && cmd.label) ? v => this.stateChangeHandler(cmd.label, cmd.parseResponse(v)) : EMPTY_LAMBDA
+				const responseHandler =
+					cmd.parseResponse && cmd.label
+						? (v) => this.stateChangeHandler(cmd.label, cmd.parseResponse(v))
+						: EMPTY_LAMBDA
 				this.projector.sendValue(cmd, value).then(responseHandler, (err) => this.log('error', err.message || err))
 			} catch (e) {
 				this.log('error', e)
@@ -1188,7 +1191,9 @@ class PanasonicInstance extends InstanceBase {
 				},
 			],
 			callback: (feedback) => {
-				return ntcontrol.OperatingMode[this.variables[Constants.OperatingMode]] === feedback.options[Constants.OperatingMode]
+				return (
+					ntcontrol.OperatingMode[this.variables[Constants.OperatingMode]] === feedback.options[Constants.OperatingMode]
+				)
 			},
 		}
 
